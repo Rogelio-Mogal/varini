@@ -53,8 +53,8 @@ class VentaController extends Controller
                     'detalles' => $items->map(function ($producto) {
                         return [
                             'id' => $producto->id,
-                            'img_thumb' => $producto->ponchado->imagen_1 
-                                ? asset('storage/' . ltrim($producto->ponchado->imagen_1, '/')) 
+                            'img_thumb' => $producto->ponchado->imagen_1
+                                ? asset('storage/' . ltrim($producto->ponchado->imagen_1, '/'))
                                 : asset('images/default.png'),
                             'nombre' => $producto->ponchado->nombre,
                             'clasificacion' => $producto->clasificacionUbicacion->nombre ?? null,
@@ -82,11 +82,11 @@ class VentaController extends Controller
                     'detalles' => $venta->detalles->map(function ($detalle) {
                         return [
                             'id' => $detalle->id,
-                            'img_thumb' => $detalle->producto?->imagen 
-                                ? asset('storage/' . ltrim($detalle->producto->imagen, '/')) 
+                            'img_thumb' => $detalle->producto?->imagen
+                                ? asset('storage/' . ltrim($detalle->producto->imagen, '/'))
                                 : asset('images/default.png'),
-                            'nombre' => $detalle->producto->nombre 
-                                ?? $detalle->servicioPonchado->ponchado->nombre 
+                            'nombre' => $detalle->producto->nombre
+                                ?? $detalle->servicioPonchado->ponchado->nombre
                                 ?? $detalle->producto_comun,
                             'clasificacion' => $detalle->servicioPonchado?->clasificacionUbicacion->nombre,
                             'cantidad' => $detalle->cantidad,
@@ -96,6 +96,7 @@ class VentaController extends Controller
                 ]);
             });
 
+        /*
         // --- UNIFICAR --- //
         $data = $pedidos->values()->toBase()     // Base Collection (no Eloquent)
         ->concat($ventas->values()->toBase())
@@ -104,6 +105,24 @@ class VentaController extends Controller
 
         // Pasar a la vista
         return view('ventas.index', ['ventas' => $data]);
+        */
+        // --- UNIFICAR --- //
+        $data = $pedidos->values()->toBase()
+            ->concat($ventas->values()->toBase())
+            ->sortBy('fecha')
+            ->values();
+
+        // --- AGRUPAR POR CLIENTE --- //
+        $agrupado = $pedidos->values()->toBase()
+        ->concat($ventas->values()->toBase())
+        ->sortBy([
+            ['cliente', 'asc'],
+            ['fecha', 'asc'],
+        ])
+        ->values();
+
+        return view('ventas.index', ['ventas' => $agrupado]);
+
     }
 
     public function create(Request $request)
@@ -153,8 +172,8 @@ class VentaController extends Controller
                     'faltante' => $total - $pagado, // 👈 nuevo
                     'tipo_item' => 'SERVICIO',
                     'clasificacion' => $p->clasificacionUbicacion->nombre ?? null,
-                    'img_thumb' => $p->ponchado->imagen_1 
-                        ? asset('storage/' . ltrim($p->ponchado->imagen_1, '/')) 
+                    'img_thumb' => $p->ponchado->imagen_1
+                        ? asset('storage/' . ltrim($p->ponchado->imagen_1, '/'))
                         : asset('images/default.png'),
                 ];
             });
@@ -196,8 +215,8 @@ class VentaController extends Controller
                     'faltante' => $total - $pagado,
                     'tipo_item' => 'SERVICIO',
                     'clasificacion' => $p->clasificacionUbicacion->nombre ?? null,
-                    'img_thumb' => $p->ponchado->imagen_1 
-                        ? asset('storage/' . ltrim($p->ponchado->imagen_1, '/')) 
+                    'img_thumb' => $p->ponchado->imagen_1
+                        ? asset('storage/' . ltrim($p->ponchado->imagen_1, '/'))
                         : asset('images/default.png'),
                 ];
             });
@@ -331,7 +350,7 @@ class VentaController extends Controller
                         ],
                         'buttonsStyling' => false  // Deshabilitar el estilo predeterminado de SweetAlert2
                     ]);
-                    
+
                     return redirect()->back()
                         ->withInput($request->all()) // Aquí solo pasas los valores del formulario
                         ->with('status', 'Hubo un error al ingresar los datos, por favor intente de nuevo.');
@@ -371,7 +390,7 @@ class VentaController extends Controller
             $venta->monto_credito = floatval($request->monto_credito) ?: 0;
             $venta->monto_recibido = 0;
             $venta->cambio = $request->total_cambio;
-            $venta->tipo_venta = $request->tipo_venta;            
+            $venta->tipo_venta = $request->tipo_venta;
             $venta->save();
 
             // Inicializamos una variable para sumar los montos finales de las formas de pago
@@ -423,7 +442,7 @@ class VentaController extends Controller
                 if ($detalle['tipo_item'] == 'PRODUCTO') {
 
                     $inventario = Inventario::where('producto_id', $detalle['producto_id'])->first();
-                    
+
 
                     if ($inventario) {
                         // Actualizar el registro existente
@@ -435,14 +454,14 @@ class VentaController extends Controller
                         $ultimoRegistro = Kardex::where('producto_id', $detalle['producto_id'])
                             ->orderBy('created_at', 'desc')
                             ->first();
-                    
+
                         // Inicializar variables para las cantidades
                         $saldoActual = $ultimoRegistro ? $ultimoRegistro->saldo : 0;
-                    
+
                         // Cantidades a agregar
                         $cantidadEntrada = 0;
                         $cantidadSalida = $detalle['cantidad'];
-                    
+
                         // Calcular el nuevo saldo
                         $nuevoSaldo = $saldoActual + $cantidadEntrada - $cantidadSalida;
 
@@ -459,7 +478,7 @@ class VentaController extends Controller
                         $kardex->saldo = $nuevoSaldo;
                         $kardex->wci = auth()->user()->id;
                         $kardex->save();
-                        
+
                     }
                 }
 
@@ -501,10 +520,10 @@ class VentaController extends Controller
             ]);
 
             return redirect()->route('admin.ventas.index')->with(['id'=> $venta->id]);
-    
+
             //return redirect()->route('admin.ventas.index');
-                
-            
+
+
         } catch (\Exception $e) {
             DB::rollback();
             $query = $e->getMessage();
@@ -517,7 +536,7 @@ class VentaController extends Controller
                 ],
                 'buttonsStyling' => false  // Deshabilitar el estilo predeterminado de SweetAlert2
             ]);
-            
+
             return redirect()->back()
                 ->withInput($request->all()) // Aquí solo pasas los valores del formulario
                 ->with('status', 'Hubo un error al ingresar los datos, por favor intente de nuevo.')
@@ -543,7 +562,7 @@ class VentaController extends Controller
             return view('ventas.edit', compact('ventas','metodo','detalle','formasPago'));
         }else{
             return redirect()->route('admin.ventas.index');
-        } 
+        }
     }
 
     public function update(Request $request, Venta $venta)
@@ -558,7 +577,7 @@ class VentaController extends Controller
 
     public function ticketMixto(Request $request)
     {
-        //$referencias = explode(',', $request->input('referencias')); 
+        //$referencias = explode(',', $request->input('referencias'));
         $referencias = explode(',', $request->input('referencias'));
 
         // separar pedidos (strings) y ventas (IDs numéricos)
