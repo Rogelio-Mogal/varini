@@ -558,6 +558,57 @@ class PonchadosPedidosController extends Controller
         }
     }
 
+    public function updateCantidad(Request $request, $id)
+    {
+        $request->validate([
+            'cantidad' => 'required|integer|min:1',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $ponchado = ServiciosPonchadosVenta::where('id', $id)
+                ->whereIn('activo', [1,2])
+                ->firstOrFail();
+
+            // 1️⃣ Actualizar cantidad
+            $ponchado->cantidad_piezas = $request->cantidad;
+            $ponchado->subtotal = $ponchado->cantidad_piezas * $ponchado->precio_unitario;
+            $ponchado->save();
+
+            // 2️⃣ Recalcular totales del pedido
+            $totales = ServiciosPonchadosVenta::where('referencia_cliente', $ponchado->referencia_cliente)
+                ->whereIn('activo', [1,2])
+                ->selectRaw('
+                    SUM(subtotal) as total,
+                    COUNT(*) as items
+                ')
+                ->first();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'item' => [
+                    'id' => $ponchado->id,
+                    'cantidad' => $ponchado->cantidad_piezas,
+                    'subtotal' => round($ponchado->subtotal, 2),
+                ],
+                'totales' => [
+                    'total' => round($totales->total, 2),
+                    'items' => $totales->items,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function destroy($id)
     {
         try {

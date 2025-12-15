@@ -56,8 +56,16 @@ class EstatusPedidosController extends Controller
                         'usuario_id' => auth()->id(),
                     ]);
 
+                    // Cambia el activo si se eliminó
+                    if ($request->estatus === 'Eliminado') {
+                        $pedido->estatus = $request->estatus;      // o null, según tu esquema
+                        $pedido->activo  = 0;      // recomendado
+                    } else {
+                        $pedido->estatus = $request->estatus;
+                        $pedido->activo  = 1;
+                    }
+
                     // Actualizar el estatus actual en la tabla principal
-                    $pedido->estatus = $request->estatus;
                     $pedido->save();
                 }
             DB::commit();

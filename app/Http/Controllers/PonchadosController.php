@@ -722,7 +722,7 @@ class PonchadosController extends Controller
 
         // PONCHADOS PARA EL APARTADO DE PEDIDOS
         if($request->origen == 'ponchados.pedidos'){
-            $ponchados = ServiciosPonchadosVenta::whereIn('servicios_ponchados_ventas.activo', [1, 2])
+            /*$ponchados = ServiciosPonchadosVenta::whereIn('servicios_ponchados_ventas.activo', [1, 2])
                 ->with(['ponchado', 'cliente', 'clasificacionUbicacion'])
                 ->orderBy('fecha_estimada_entrega', 'asc') 
                 //->where('estatus','!=','Entregado')
@@ -731,7 +731,33 @@ class PonchadosController extends Controller
                 //->whereIn('activo', [1, 2])
                 ->whereDoesntHave('ventaDetalles')
                 ->get()
-                ->groupBy('referencia_cliente');
+                ->groupBy('referencia_cliente');*/
+
+            $ponchados = ServiciosPonchadosVenta::query()
+            // 1️⃣ SOLO REGISTROS VISIBLES
+            ->where('activo', 1)
+
+            // 2️⃣ RELACIONES
+            ->with(['ponchado', 'cliente', 'clasificacionUbicacion'])
+
+            // 3️⃣ EXCLUIR PEDIDOS CERRADOS (solo si TODOS los ACTIVOS están cerrados)
+            ->whereNotIn('referencia_cliente', function ($q) {
+                $q->select('referencia_cliente')
+                ->from('servicios_ponchados_ventas')
+                ->where('activo', 1) // 👈 CLAVE
+                ->groupBy('referencia_cliente')
+                ->havingRaw(
+                    'COUNT(*) = SUM(estatus IN ("Entregado"))'
+                );
+            })
+
+            // 4️⃣ OTRAS REGLAS
+            ->whereDoesntHave('ventaDetalles')
+            ->orderBy('fecha_estimada_entrega', 'asc')
+
+            // 5️⃣ EJECUCIÓN
+            ->get()
+            ->groupBy('referencia_cliente');
             
             // Modificar cada producto para agregar la URL completa de la imagen
             $data = $ponchados->map(function ($items, $referencia) {

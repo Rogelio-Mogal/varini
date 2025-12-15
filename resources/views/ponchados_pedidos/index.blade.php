@@ -340,8 +340,6 @@
             });
         });
 
-
-
         // Abrir modal al hacer clic en el botón
         $(document).on('click', '.open-modal', function(e) {
             e.preventDefault();
@@ -632,6 +630,7 @@
                         var editLink = editUrl.replace(':id', data);
                         var sowLink = showUrl.replace(':id', data);
                         var isActive = row.activo;
+                        console.log('isActive: '+isActive);
 
                         if (isActive == 1 || isActive == 2) {
                             return `

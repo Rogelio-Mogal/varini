@@ -417,6 +417,43 @@
             actualizarOpcionesFormasPago();
         }
 
+        // AJAX CAMBIO DE CANTIDAD
+        document.addEventListener('input', function (e) {
+
+            if (!e.target.classList.contains('cantVenta')) return;
+
+            const row = e.target.closest('tr');
+            const cantidad = parseInt(e.target.value);
+            const id = row.dataset.idponchadoservicio;
+
+            if (cantidad < 1) return;
+
+            fetch(`/pedidos-ponchados/${id}/update-cantidad`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ cantidad })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) return alert('Error al actualizar');
+
+                // 1️⃣ Actualiza subtotal de la fila
+                row.querySelector('.importe').innerText =
+                    data.item.subtotal.toFixed(2);
+
+                // 2️⃣ Actualiza hidden
+                row.querySelector('input[name$="[total]"]').value =
+                    data.item.subtotal;
+
+                // 3️⃣ Actualiza totales generales
+                document.getElementById('totalVenta').innerText =
+                    data.totales.total.toFixed(2);
+            });
+        });
+
 
         $(document).ready(function() {
             recalcularTotalTabla('item_table_0');

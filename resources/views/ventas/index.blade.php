@@ -194,7 +194,7 @@
                 }
 
                 // Enviar por GET al create
-                let url = "{{ route('admin.ventas.create') }}?referencias=" + seleccionados.join(',');
+                let url = "{{ route('admin.ventas.create') }}?referencia_cliente=" + seleccionados.join(',');
                 window.location.href = url;
             });
 

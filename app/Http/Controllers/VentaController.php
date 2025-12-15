@@ -367,7 +367,7 @@ class VentaController extends Controller
             $venta->cliente_id = $request->cliente_id;
             $venta->folio = $folio;
             $venta->fecha = Carbon::now();
-            $venta->total = $request->total_venta;
+            $venta->total = 0;
             $venta->monto_credito = floatval($request->monto_credito) ?: 0;
             $venta->monto_recibido = 0;
             $venta->cambio = $request->total_cambio;
@@ -406,7 +406,9 @@ class VentaController extends Controller
             $venta->save(); // O $venta->update(['monto_recibido' => $montoRecibidoNetoTotal]);
 
             //VENTA DETALLE
+            $totalVentaReal = 0;
             foreach ($request->detalles as $detalle) {
+                $totalDetalle = $detalle['cantidad'] * $detalle['precio'];
                 VentaDetalle::create([
                     'venta_id' => $venta->id,
                     'tipo_item' => $detalle['tipo_item'] ?? null,
@@ -415,9 +417,11 @@ class VentaController extends Controller
                     'producto_comun' => $detalle['producto_comun'] ?? null,
                     'cantidad' => $detalle['cantidad'],
                     'precio' => $detalle['precio'],
-                    'total' => $detalle['total'],
+                    'total' => $detalle['cantidad'] * $detalle['precio'],
                     'activo' => 1,
                 ]);
+                // acumulamos el total REAL
+                $totalVentaReal += $totalDetalle;
 
                 // Verificar si el producto ya existe en el inventario y es un PRODUCTO
                 if ($detalle['tipo_item'] == 'PRODUCTO') {
@@ -478,6 +482,10 @@ class VentaController extends Controller
                 }
 
             }
+
+            //ACTUALIZO EL TOTAL DE LA VENTA
+            $venta->total = $totalVentaReal;
+            $venta->save();
 
             //VENTA A CRÉDITO
             if($request->tipo_venta == 'CRÉDITO'){

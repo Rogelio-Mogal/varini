@@ -140,6 +140,10 @@ Route::post('ponchados-precios/index/ajax', [PrecioPonchadoController::class, 'p
 Route::get('ticket-ponchado/{id}', [PonchadosPedidosController::class, 'ticketPedido'])
 		->name('ticket.ponchado');
 
+Route::post('pedidos-ponchados/{id}/update-cantidad', 
+    [PonchadosPedidosController::class, 'updateCantidad']
+)->name('ponchados.updateCantidad');
+
 Route::resource('cotizaciones', CotizacionesController::class)->names('admin.cotizacion');
 Route::resource('cotizacion/detalles', CotizacionesDetallesController::class)->names('admin.cotizacion.detalles');
 Route::resource('ticket-alterno', TicketAlternoController::class)->names('admin.ticket.alterno');
