@@ -52,6 +52,10 @@
                     'admin.gastos.*',
                     'admin.asignar.gasto.*',
                 ],
+                'dropdown-ventas': [
+                    'admin.ventas.*',
+                    'admin.pagadas.*',
+                ],
                 'dropdown-clientes': [
                     'admin.clientes.*',
                     'admin.creditos.*',

@@ -30,6 +30,7 @@ use App\Http\Controllers\ProveedoresController;
 use App\Http\Controllers\TicketAlternoController;
 use App\Http\Controllers\TipoGastoController;
 use App\Http\Controllers\VentaController;
+use App\Http\Controllers\VentaPagadaController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckUserActive;
 
@@ -140,9 +141,15 @@ Route::post('ponchados-precios/index/ajax', [PrecioPonchadoController::class, 'p
 Route::get('ticket-ponchado/{id}', [PonchadosPedidosController::class, 'ticketPedido'])
 		->name('ticket.ponchado');
 
-Route::post('pedidos-ponchados/{id}/update-cantidad', 
+Route::post('pedidos-ponchados/{id}/update-cantidad',
     [PonchadosPedidosController::class, 'updateCantidad']
 )->name('ponchados.updateCantidad');
+
+Route::post('ventas/index/ajax', [VentaController::class, 'ventas_index_ajax'])
+	->name('ventas.index.ajax');
+
+Route::post('ventas-pagadas/index/ajax', [VentaPagadaController::class, 'ventas_pagadas_index_ajax'])
+	->name('ventas.pagadas.index.ajax');
 
 Route::resource('cotizaciones', CotizacionesController::class)->names('admin.cotizacion');
 Route::resource('cotizacion/detalles', CotizacionesDetallesController::class)->names('admin.cotizacion.detalles');
@@ -158,4 +165,5 @@ Route::resource('abonos', AbonosController::class)->names('admin.abonos');
 Route::resource('estatus-pedidos', EstatusPedidosController::class)->names('admin.estatus.pedidos');
 Route::resource('configuracion', ConfiguracionController::class)->names('admin.configuracion');
 Route::resource('precio-ponchado', PrecioPonchadoController::class)->names('admin.precio.ponchado');
+Route::resource('pagadas', VentaPagadaController::class)->names('admin.pagadas');
 

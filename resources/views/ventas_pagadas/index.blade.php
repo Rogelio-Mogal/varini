@@ -5,7 +5,7 @@
         'url' => route('dashboard')
     ],
     [
-        'name' => 'Ventas'
+        'name' => 'Ventas pagadas'
     ]
 ]])
 
@@ -14,25 +14,104 @@
 @stop
 
 @section('content')
+<?php
+    $fechaActual = date('Y-m-d');
+?>
 
     <div class="shadow-md rounded-lg p-4 dark:bg-gray-800">
         <div class="grid grid-cols-1 lg:grid-cols-12 md:grid-cols-12 sm:grid-cols-12 gap-4">
             <div class="sm:col-span-12 lg:col-span-12 md:col-span-12">
-                <div class="mb-4">
-                    <button id="reloadTable"
-                        class="text-white bg-blue-500 hover:bg-blue-600 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                        Recargar Tabla
-                    </button>
-                    <button id="pasarSeleccionados"
-                        class="mb-3 bg-purple-600 text-white px-3 py-2 rounded hover:bg-purple-700">
-                        Pasar seleccionados a venta
-                    </button>
 
-                    <button id="generarTicketSeleccionados"
-                            class="mb-3 bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700">
-                        Generar Ticket Seleccionados
-                    </button>
+                <div class="sm:col-span-12 lg:col-span-12 md:col-span-12">
+                    <form id="filtroForm">
+                        <div class="grid grid-cols-12 gap-3">
+                            <!-- TIPO DE FILTRO -->
+                            <div class="col-span-4">
+                                <label class="block mb-2 text-sm font-medium text-gray-900">Tipo de filtro</label>
+                                <div class="flex gap-6 items-center">
+                                    <label class="flex items-center gap-2">
+                                        <input type="radio" name="tipoFiltro" value="NINGUNO" id="radioNinguno" class="w-4 h-4" checked>
+                                        <span>Ninguno</span>
+                                    </label>
+                                    <label class="flex items-center gap-2">
+                                        <input type="radio" name="tipoFiltro" value="MES" id="radioMes" class="w-4 h-4">
+                                        <span>Por mes</span>
+                                    </label>
+                                    <label class="flex items-center gap-2">
+                                        <input type="radio" name="tipoFiltro" value="RANGO" id="radioRango" class="w-4 h-4">
+                                        <span>Por rango de fechas</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <!-- FILTRO POR MES -->
+                            <div id="filtroMes" class="col-span-2 hidden">
+                                <label class="block mb-2 text-sm font-medium text-gray-900">Mes</label>
+                                <input type="month" id="mes" class="bg-gray-50 border border-gray-300 rounded-lg p-2.5 w-full"
+                                value="{{ isset($mes) ? $mes : $now->format('Y-m') }}">
+                            </div>
+                            <!-- RANGO DE FECHAS -->
+                            <div id="filtroRango" class="col-span-3 hidden grid grid-cols-8 gap-3">
+                                <div class="col-span-4">
+                                    <label class="block mb-2 text-sm font-medium text-gray-900">Fecha inicio</label>
+                                    <input type="date" id="fechaInicio"
+                                        class="bg-gray-50 border border-gray-300 rounded-lg p-2.5 w-full"
+                                        value="{{ $fechaActual }}">
+                                </div>
+                                <div class="col-span-4">
+                                    <label class="block mb-2 text-sm font-medium text-gray-900">Fecha fin</label>
+                                    <input type="date" id="fechaFin"
+                                        class="bg-gray-50 border border-gray-300 rounded-lg p-2.5 w-full"
+                                        value="{{ $fechaActual }}">
+                                </div>
+                            </div>
+                            <!-- BOTONES -->
+                            <div class="col-span-3 flex gap-2 mt-0 items-end">
+                                <button type="button" id="btnFiltrar" data-tooltip-target="tooltip-filtrar" data-tooltip-placement="bottom"
+                                    class="text-white bg-pink-600 hover:bg-pink-700 px-3 py-2 rounded-lg">
+                                    <svg class="w-5 h-7 text-gray-100 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M18.796 4H5.204a1 1 0 0 0-.753 1.659l5.302 6.058a1 1 0 0 1 .247.659v4.874a.5.5 0 0 0 .2.4l3 2.25a.5.5 0 0 0 .8-.4v-7.124a1 1 0 0 1 .247-.659l5.302-6.059c.566-.646.106-1.658-.753-1.658Z"/>
+                                    </svg>
+                                    <span class="sr-only">Filtrar</span>
+                                </button>
+                                <div id="tooltip-filtrar"
+                                    role="tooltip"
+                                    class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip">
+                                    Aplicar filtros
+                                    <div class="tooltip-arrow" data-popper-arrow></div>
+                                </div>
+                                <button type="button" id="reloadTable" data-tooltip-target="tooltip-recargar" data-tooltip-placement="bottom"
+                                    class="text-white bg-blue-500 hover:bg-blue-600 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-3 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                                    <svg class="w-5 h-7 text-gray-100 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4"/>
+                                    </svg>
+                                    <span class="sr-only">Recargar</span>
+                                </button>
+                                <div id="tooltip-recargar"
+                                    role="tooltip"
+                                    class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip">
+                                    Recargar tabla
+                                    <div class="tooltip-arrow" data-popper-arrow></div>
+                                </div>
+                                <button id="generarTicketSeleccionados" data-tooltip-target="tooltip-ticket" data-tooltip-placement="bottom"
+                                        class="bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700">
+                                    <svg class="w-5 h-7 text-gray-100 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24"
+                                        height="24" fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 8h6m-6 4h6m-6 4h6M6 3v18l2-2 2 2 2-2 2 2 2-2 2 2V3l-2 2-2-2-2 2-2-2-2 2-2-2Z" />
+                                    </svg>
+                                    <span class="sr-only">Generar Ticket Seleccionados</span>
+                                </button>
+                                <div id="tooltip-ticket"
+                                    role="tooltip"
+                                    class="absolute z-10 invisible inline-block px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip">
+                                    Generar ticket (seleccionados)
+                                    <div class="tooltip-arrow" data-popper-arrow></div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
                 </div>
+                <br>
 
                 <table id="venta" class="table table-striped" style="width:100%">
                     <thead>
@@ -103,7 +182,7 @@
                                 <div class="flex items-center gap-2">
                                     ${checkbox}
                                     <span class="font-semibold text-gray-800">
-                                        ${group} (${rows.count()} pedidos)
+                                        ${group} (${rows.count()} ventas)
                                     </span>
                                 </div>
                             `;
@@ -113,12 +192,12 @@
                         { orderable: false, targets: 0 } // desactiva ordenamiento en la columna de checkboxes
                     ],
                     ajax: {
-                        url: "{{ route('ventas.index.ajax') }}",
+                        url: "{{ route('ventas.pagadas.index.ajax') }}",
                         type: "POST",
                         data: function (d) {
                             return $.extend(d, {
                                 _token: $('meta[name="csrf-token"]').attr('content'),
-                                origen: "ventas.por.cobrar",
+                                origen: "ventas.pagadas",
                             });
                         }
                     },
@@ -128,12 +207,12 @@
                             orderable: false,
                             render: function (data, type, row) {
 
-                                if (row.tipo === 'pedido' && row.estatus === 'Finalizado') {
+                                if (row.tipo === 'venta') {
                                     return `
                                         <input type="checkbox"
                                             class="pedido-check"
-                                            name="${row.referencia_cliente}"
-                                            value="${row.referencia_cliente}"
+                                            name="${row.id}"
+                                            value="${row.id}"
                                             data-cliente-nombre="${row.cliente}">
                                     `;
                                 }
@@ -178,8 +257,100 @@
 
             // Botón de recargar
             $("#reloadTable").on("click", function() {
+                $// Dejar seleccionado NINGUNO
+                $("#radioNinguno").prop("checked", true);
+
+                // Ocultar ambos filtros
+                $("#filtroMes").addClass("hidden");
+                $("#filtroRango").addClass("hidden");
+
+                // Limpiar valores
+                $("#mes").val("");
+                $("#fechaInicio").val("");
+                $("#fechaFin").val("");
+
                 cargarVentas();
             });
+
+            // Mostrar u ocultar filtros según selección
+            $("input[name='tipoFiltro']").on("change", function () {
+
+                let tipo = $(this).val();
+
+                if (tipo === "MES") {
+                    $("#filtroMes").removeClass("hidden");
+                    $("#filtroRango").addClass("hidden");
+                } else if (tipo === "RANGO") {
+                    $("#filtroRango").removeClass("hidden");
+                    $("#filtroMes").addClass("hidden");
+                }else if (tipo === "NINGUNO") {
+                    $("#filtroMes").addClass("hidden");
+                    $("#filtroRango").addClass("hidden");
+                }
+            });
+
+            // FILTRAR (envío AJAX al DataTable)
+            $("#btnFiltrar_NO").on("click", function () {
+
+                let tipo = $("input[name='tipoFiltro']:checked").val();
+
+                let postData = {
+                    _token: $('meta[name="csrf-token"]').attr('content'),
+                    origen: "ventas.pagadas",
+                };
+
+                if (tipo === "MES") {
+                    postData.mes_hidden = "MES";
+                    postData.mes = $("#mes").val();
+                }
+
+                if (tipo === "RANGO") {
+                    postData.rango = "RANGO";
+                    postData.fechaInicio = $("#fechaInicio").val();
+                    postData.fechaFin = $("#fechaFin").val();
+                }
+
+                if (tipo === "NINGUNO") {
+                    postData.filtro = "NINGUNO";
+                }
+
+                // Ahora SÍ enviamos los datos correctamente al DataTable
+                tblVentas.ajax.reload(null, false);
+                tblVentas.ajax.params = postData;
+
+                tblVentas.settings()[0].ajax.data = function(d){
+                    return $.extend(d, postData);
+                };
+
+                tblVentas.ajax.reload();
+            });
+
+            $("#btnFiltrar").on("click", function () {
+
+                let tipoFiltro = $("input[name='tipoFiltro']:checked").val();
+
+                tblVentas.settings()[0].ajax.data = function (d) {
+
+                    d._token = $('meta[name="csrf-token"]').attr('content');
+                    d.origen = "ventas.pagadas";
+                    d.tipoFiltro = tipoFiltro;
+
+                    if (tipoFiltro === "MES") {
+                        d.mes = $("#mes").val();
+                    }
+
+                    if (tipoFiltro === "RANGO") {
+                        d.fechaInicio = $("#fechaInicio").val();
+                        d.fechaFin = $("#fechaFin").val();
+                    }
+
+                    // NINGUNO no envía fechas
+                    return d;
+                };
+
+                tblVentas.ajax.reload();
+            });
+
 
             // seleccionar / deseleccionar pedidos por cliente (rowGroup)
             $('#venta').on('change', '.group-check', function () {

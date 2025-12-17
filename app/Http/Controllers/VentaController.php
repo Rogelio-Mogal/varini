@@ -27,102 +27,7 @@ class VentaController extends Controller
 
     public function index()
     {
-        $hoy = Carbon::today();
-        $hace7dias = $hoy->copy()->subDays(7);
-
-        // --- PEDIDOS FINALIZADOS --- //
-        $pedidos = ServiciosPonchadosVenta::whereIn('activo', [1, 2])
-            ->where('estatus', 'Finalizado')
-            //->whereBetween('fecha_estimada_entrega', [$hace7dias, $hoy])
-            ->with(['ponchado', 'cliente', 'clasificacionUbicacion'])
-            ->orderBy('fecha_estimada_entrega', 'asc')
-            ->get()
-            ->groupBy('referencia_cliente')
-            ->filter(function($items) {
-                return $items->every(fn($item) => $item->estatus === 'Finalizado');
-            })
-            ->map(function ($items, $referencia) {
-                  return collect ([
-                    'id' => $referencia,
-                    'tipo' => 'pedido',
-                    'referencia_cliente' => $referencia,
-                    'cliente' => $items->first()->cliente->full_name ?? 'CLIENTE PÚBLICO',
-                    'fecha' => $items->first()->fecha_estimada_entrega,
-                    'estatus' => $items->first()->estatus,
-                    'activo' => $items->first()->activo, // 👈 lo agregamos
-                    'detalles' => $items->map(function ($producto) {
-                        return [
-                            'id' => $producto->id,
-                            'img_thumb' => $producto->ponchado->imagen_1
-                                ? asset('storage/' . ltrim($producto->ponchado->imagen_1, '/'))
-                                : asset('images/default.png'),
-                            'nombre' => $producto->ponchado->nombre,
-                            'clasificacion' => $producto->clasificacionUbicacion->nombre ?? null,
-                            'cantidad' => $producto->cantidad_piezas,
-                            'activo' => $producto->activo,
-                        ];
-                    })->values(),
-                ]);
-            });
-
-        // --- VENTAS --- //
-        $ventas = Venta::with(['cliente','detalles.producto','detalles.servicioPonchado'])
-            ->whereBetween('fecha', [$hace7dias, $hoy])
-            ->orderBy('fecha', 'asc')
-            ->get()
-            ->map(function ($venta) {
-                return collect([
-                    'id' => $venta->id,
-                    'tipo' => 'venta',
-                    'referencia_cliente' => $venta->folio,
-                    'cliente' => $venta->cliente->full_name ?? 'CLIENTE PÚBLICO',
-                    'fecha' => $venta->fecha,
-                    'estatus' => 'Vendido',
-                    'activo' => $venta->activo ?? 1, // 👈 aseguras que exista
-                    'detalles' => $venta->detalles->map(function ($detalle) {
-                        return [
-                            'id' => $detalle->id,
-                            'img_thumb' => $detalle->producto?->imagen
-                                ? asset('storage/' . ltrim($detalle->producto->imagen, '/'))
-                                : asset('images/default.png'),
-                            'nombre' => $detalle->producto->nombre
-                                ?? $detalle->servicioPonchado->ponchado->nombre
-                                ?? $detalle->producto_comun,
-                            'clasificacion' => $detalle->servicioPonchado?->clasificacionUbicacion->nombre,
-                            'cantidad' => $detalle->cantidad,
-                            'activo' => $detalle->activo,
-                        ];
-                    })->values(),
-                ]);
-            });
-
-        /*
-        // --- UNIFICAR --- //
-        $data = $pedidos->values()->toBase()     // Base Collection (no Eloquent)
-        ->concat($ventas->values()->toBase())
-        ->sortBy('fecha')                // opcional: ordenar por fecha
-        ->values();
-
-        // Pasar a la vista
-        return view('ventas.index', ['ventas' => $data]);
-        */
-        // --- UNIFICAR --- //
-        $data = $pedidos->values()->toBase()
-            ->concat($ventas->values()->toBase())
-            ->sortBy('fecha')
-            ->values();
-
-        // --- AGRUPAR POR CLIENTE --- //
-        $agrupado = $pedidos->values()->toBase()
-        ->concat($ventas->values()->toBase())
-        ->sortBy([
-            ['cliente', 'asc'],
-            ['fecha', 'asc'],
-        ])
-        ->values();
-
-        return view('ventas.index', ['ventas' => $agrupado]);
-
+        return view('ventas.index');
     }
 
     public function create(Request $request)
@@ -617,7 +522,6 @@ class VentaController extends Controller
         return $pdf->stream();
     }
 
-
     public function ticket($id){
 
         $venta = Venta::with([
@@ -641,5 +545,67 @@ class VentaController extends Controller
         $pdf = PDF::loadView('comprobantes.ticket_venta', compact('venta','userPrinterSize'))
             ->setPaper($size,'portrait');
         return $pdf->stream();
+    }
+
+    public function ventas_index_ajax(Request $request)
+    {
+        $hoy = Carbon::today();
+        $hace7dias = $hoy->copy()->subDays(360);
+
+        // VENTAS - PEDIDOS POR COBRAR
+        if ($request->origen == 'ventas.por.cobrar') {
+
+            $porCobrar = ServiciosPonchadosVenta::whereIn('activo', [1, 2])
+                ->where('estatus', 'Finalizado')
+                ->whereBetween('fecha_estimada_entrega', [$hace7dias, $hoy])
+                ->with(['ponchado', 'cliente', 'clasificacionUbicacion'])
+                ->orderBy('fecha_estimada_entrega', 'asc')
+                ->get()
+                ->groupBy('referencia_cliente')
+                ->filter(function($items) {
+                    return $items->every(fn($item) => $item->estatus === 'Finalizado');
+                })
+                ->map(function ($items, $referencia) {
+                    $item = $items->first();
+                    return collect ([
+                        'id' => $referencia,
+                        'tipo' => 'pedido',
+                        'referencia_cliente' => $referencia,
+                        'cliente' => $items->first()->cliente->full_name ?? 'CLIENTE PÚBLICO',
+                        'fecha' => $items->first()->fecha_estimada_entrega,
+                        'estatus' => $items->first()->estatus,
+                        'activo' => $items->first()->activo, // 👈 lo agregamos
+                        'acciones' => view('ventas.partials.acciones', [
+                            'item' => [
+                                'id' => $item->id,
+                                'tipo' => 'pedido',
+                                'estatus' => $item->estatus,
+                                'activo' => $item->activo,
+                                'referencia_cliente' => $item->referencia_cliente,
+                            ]
+                        ])->render(),
+                        'detalles' => $items->map(function ($producto) {
+                            return [
+                                'id' => $producto->id,
+                                'img_thumb' => $producto->ponchado->imagen_1
+                                    ? asset('storage/' . ltrim($producto->ponchado->imagen_1, '/'))
+                                    : asset('images/default.png'),
+                                'nombre' => $producto->ponchado->nombre,
+                                'clasificacion' => $producto->clasificacionUbicacion->nombre ?? null,
+                                'cantidad' => $producto->cantidad_piezas,
+                                'activo' => $producto->activo,
+                            ];
+                        })->values(),
+                    ]);
+            })
+            ->sortBy([
+                ['cliente', 'asc'],
+                ['fecha', 'asc'],
+            ])
+            ->values();
+
+
+            return response()->json(['data' => $porCobrar]);
+        }
     }
 }
