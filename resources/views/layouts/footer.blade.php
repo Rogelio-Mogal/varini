@@ -1,22 +1,28 @@
-  {{-- 
+  {{--
    <!--popper -->
     <script src="https://unpkg.com/@popperjs/core@2/dist/umd/popper.min.js"></script>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 --}}
-    
+
     <!-- Flowbite -->
     <script src="{{ mix('node_modules/flowbite/dist/flowbite.min.js') }}"></script>
 
 
     <!--datatables -->
     <script src="{{ asset('datatable/js/datatables.min.js') }}"></script>
+    <!-- RowGroup oficial -->
+    <script src="{{ asset('datatable/js/dataTables.rowGroup.min.js') }}"></script>
+    <!-- Responsive (si lo usas) -->
+    <script src="{{ asset('datatable/js/dataTables.responsive.min.js') }}"></script>
+
 
     <!--select2 -->
     <script src="{{ asset('select2/select2.min.js') }}"></script>
 
-    
+    <!-- sweetAlert2 -->
+    <script src="{{ asset('sweetalert2/js/sweetalert2@11.js') }}"></script>
 
 
 
@@ -33,7 +39,7 @@
 
 
     <script>
-        // APERTURA EL SUBMENU 
+        // APERTURA EL SUBMENU
         document.addEventListener('DOMContentLoaded', () => {
             const currentRoute = "{{ request()->route()->getName() }}"; // Obtiene el nombre de la ruta actual
             const routesToCheck = {

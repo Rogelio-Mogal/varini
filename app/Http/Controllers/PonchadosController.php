@@ -108,7 +108,7 @@ class PonchadosController extends Controller
 
         // 6. Si no hubo errores, obtener los datos validados
         $validatedData = $validator->validated();
-        
+
         try {
             DB::beginTransaction();
 
@@ -130,19 +130,19 @@ class PonchadosController extends Controller
                 $slug = Str::random(10);
                 $permitted_chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
                 $file_name = $slug . '_' . substr(str_shuffle($permitted_chars), 0, 3) . '.' . $request->file('imagen_1')->getClientOriginalExtension();
-            
+
                 // Ruta hacia public_html/storage/... (donde realmente se ve la imagen)
                 //$destinationPath = base_path('public/storage/img_ponchado/thumbs');
                 $destinationPath = $_SERVER['DOCUMENT_ROOT'] . '/storage/img_ponchado/thumbs';
-            
+
                 // Crea la carpeta si no existe
                 if (!file_exists($destinationPath)) {
                     mkdir($destinationPath, 0775, true);
                 }
-            
+
                 // Mueve la imagen al destino
                 $request->file('imagen_1')->move($destinationPath, $file_name);
-            
+
                 // Redimensiona con intervención/image
                 $manager = new ImageManager(new Driver());
                 $imgThumb = $manager->read($destinationPath . '/' . $file_name);
@@ -150,7 +150,7 @@ class PonchadosController extends Controller
                     $constraint->aspectRatio();
                 });
                 $imgThumb->save($destinationPath . '/' . $file_name, 90, 'jpg');
-            
+
                 // Guarda la ruta relativa
                 $ponchado->imagen_1 = 'img_ponchado/thumbs/' . $file_name;
             }
@@ -160,23 +160,23 @@ class PonchadosController extends Controller
             if ($request->hasFile('archivo')) {
                 $extension = $request->file('archivo')->getClientOriginalExtension();
                 $intentos = 0;
-            
+
                 do {
                     $file_name = Str::random(10) . '.' . $extension;
                     $relativePath = 'archivos_ponchados/' . $file_name;
                     $fullPath = public_path('storage/' . $relativePath); // public_html/storage/archivos_ponchados
                     $intentos++;
                 } while (file_exists($fullPath) && $intentos < 10);
-            
+
                 // Asegura que exista la carpeta
                 $destination = public_path('storage/archivos_ponchados');
                 if (!file_exists($destination)) {
                     mkdir($destination, 0775, true);
                 }
-            
+
                 // Mueve el archivo
                 $request->file('archivo')->move($destination, $file_name);
-            
+
                 // Guarda solo la ruta relativa en la BD
                 $ponchado->archivo = $relativePath;
             }
@@ -220,7 +220,7 @@ class PonchadosController extends Controller
                 'ponchado_id'  => $ponchado->id,
                 'tipoPrecio'   => 'ponchado'              // si usas este campo
             ]);
-    
+
             //return redirect()->route('admin.ponchados.index');
         } catch (\Exception $e) {
             DB::rollback();
@@ -273,7 +273,7 @@ class PonchadosController extends Controller
             ->where('activo', 1)
             ->select('id', 'nombre')
             ->get();
-        
+
         $detalle = PonchadoDetalles::where('ponchado_id',$id)
             ->where('activo',1)
             ->orderBy('color_tela')
@@ -294,7 +294,7 @@ class PonchadosController extends Controller
             return view('ponchados.show', compact('ponchado','metodo','marcaValues','detalle','fondos','archivoUrl'));
         }else{
             return redirect()->route('admin.ponchados.index');
-        } 
+        }
     }
 
     public function edit($id)
@@ -333,7 +333,7 @@ class PonchadosController extends Controller
             ->get();
 
         //$ponchado->imagen_1 = $ponchado->imagen_1 ? asset('storage/' . ltrim($ponchado->imagen_1, '/')) : asset('images/default.png');
-        
+
         $detalle = PonchadoDetalles::where('ponchado_id',$ponchado->id)
             ->where('activo',1)
             ->orderBy('color_tela')
@@ -344,7 +344,7 @@ class PonchadosController extends Controller
             return view('ponchados.edit', compact('ponchado','metodo','marcaValues','detalle','fondos'));
         }else{
             return redirect()->route('admin.ponchados.index');
-        } 
+        }
     }
 
     public function update(Request $request, $id)
@@ -460,7 +460,7 @@ class PonchadosController extends Controller
 
                 return redirect()->back()->withErrors($newMessageBag)->withInput();
             }
-        
+
             try {
                 DB::beginTransaction();
                 $ponchado->nombre = $request->nombre;
@@ -470,28 +470,28 @@ class PonchadosController extends Controller
                 $ponchado->largo = $request->largo;
                 $ponchado->aro = $request->aro;
                 $ponchado->nota = $request->nota;
-                $ponchado->wci = auth()->user()->id;      
-                
+                $ponchado->wci = auth()->user()->id;
+
                 // === ACTUALIZAR IMAGEN ===
                 if ($request->hasFile('imagen_1') && $request->file('imagen_1')->isValid()) {
                     $nuevoNombreOriginal = $request->file('imagen_1')->getClientOriginalName();
-                    
+
                     // Evitar actualizar si el archivo es el mismo que ya está guardado
                     if (empty($ponchado->imagen_1) || !str_contains($ponchado->imagen_1, $nuevoNombreOriginal)) {
                         $slug = Str::random(10);
                         $permitted_chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
                         $file_name = $slug . '_' . substr(str_shuffle($permitted_chars), 0, 3) . '.' . $request->file('imagen_1')->getClientOriginalExtension();
-                    
+
                         $destinationPath = $_SERVER['DOCUMENT_ROOT'] . '/storage/img_ponchado/thumbs';
-                    
+
                         // Crear carpeta si no existe
                         if (!file_exists($destinationPath)) {
                             mkdir($destinationPath, 0775, true);
                         }
-                    
+
                         // Mover la nueva imagen
                         $request->file('imagen_1')->move($destinationPath, $file_name);
-                    
+
                         // Redimensionar miniatura
                         $manager = new ImageManager(new Driver());
                         $imgThumb = $manager->read($destinationPath . '/' . $file_name);
@@ -499,7 +499,7 @@ class PonchadosController extends Controller
                             $constraint->aspectRatio();
                         });
                         $imgThumb->save($destinationPath . '/' . $file_name, 90, 'jpg');
-                    
+
                         // Eliminar imagen anterior si existe
                         if (!empty($ponchado->imagen_1)) {
                             $oldPath = $_SERVER['DOCUMENT_ROOT'] . '/storage/' . $ponchado->imagen_1;
@@ -507,7 +507,7 @@ class PonchadosController extends Controller
                                 unlink($oldPath);
                             }
                         }
-                    
+
                         // Guardar nueva ruta relativa
                         $ponchado->imagen_1 = 'img_ponchado/thumbs/' . $file_name;
                     }else{
@@ -515,7 +515,7 @@ class PonchadosController extends Controller
                         $ponchado->imagen_1 = $ponchado->getOriginal('imagen_1');
                     }
                 }
-                
+
                 // === ACTUALIZAR ARCHIVO ===
                 if ($request->hasFile('archivo') && $request->file('archivo')->isValid()) {
                     $nuevoNombreOriginal = $request->file('archivo')->getClientOriginalName();
@@ -524,22 +524,22 @@ class PonchadosController extends Controller
                         $extension = $request->file('archivo')->getClientOriginalExtension();
                         $extension = $request->file('archivo')->getClientOriginalExtension();
                         $intentos = 0;
-                    
+
                         do {
                             $file_name = Str::random(10) . '.' . $extension;
                             $relativePath = 'archivos_ponchados/' . $file_name;
                             $fullPath = public_path('storage/' . $relativePath);
                             $intentos++;
                         } while (file_exists($fullPath) && $intentos < 10);
-                    
+
                         $destination = public_path('storage/archivos_ponchados');
                         if (!file_exists($destination)) {
                             mkdir($destination, 0775, true);
                         }
-                    
+
                         // Mover nuevo archivo
                         $request->file('archivo')->move($destination, $file_name);
-                    
+
                         // Eliminar archivo anterior si existe
                         if (!empty($ponchado->archivo)) {
                             $oldFile = public_path('storage/' . $ponchado->archivo);
@@ -547,7 +547,7 @@ class PonchadosController extends Controller
                                 unlink($oldFile);
                             }
                         }
-                    
+
                         // Guardar nueva ruta relativa
                         $ponchado->archivo = $relativePath;
                     }else{
@@ -613,7 +613,7 @@ class PonchadosController extends Controller
                 ],
                 'buttonsStyling' => false
             ]);
-        
+
             return redirect()->route('admin.ponchados.index');
         }
     }
@@ -622,7 +622,7 @@ class PonchadosController extends Controller
     {
         try {
             $ponchado = Ponchados::findorfail($id);
-            
+
             if($ponchado->activo == 0){
                 return response()->json([
                     'swal' => [
@@ -673,7 +673,7 @@ class PonchadosController extends Controller
                     'success' => 'No podrá eliminar este registro.'
                 ], 200);
             }
-    
+
         } catch (\Exception $e) {
             session()->flash('swal', [
                 'icon' => "error",
@@ -724,7 +724,7 @@ class PonchadosController extends Controller
         if($request->origen == 'ponchados.pedidos'){
             /*$ponchados = ServiciosPonchadosVenta::whereIn('servicios_ponchados_ventas.activo', [1, 2])
                 ->with(['ponchado', 'cliente', 'clasificacionUbicacion'])
-                ->orderBy('fecha_estimada_entrega', 'asc') 
+                ->orderBy('fecha_estimada_entrega', 'asc')
                 //->where('estatus','!=','Entregado')
                 ->whereNotIn('estatus', ['Entregado', 'Finalizado']) // EXCLUYE AMBOS
                 //->where('activo',1)
@@ -758,7 +758,7 @@ class PonchadosController extends Controller
             // 5️⃣ EJECUCIÓN
             ->get()
             ->groupBy('referencia_cliente');
-            
+
             // Modificar cada producto para agregar la URL completa de la imagen
             $data = $ponchados->map(function ($items, $referencia) {
 
@@ -796,7 +796,7 @@ class PonchadosController extends Controller
                             'cantidad_piezas' => $producto->cantidad_piezas,
                             'estatus' => $producto->estatus,
                             'cliente_id' => $producto->cliente_id,   // 🔹 incluir
-                            'precio' => $producto->precioPonchado ? $producto->precioPonchado->precio : $producto->precio_unitario,  
+                            'precio' => $producto->precioPonchado ? $producto->precioPonchado->precio : $producto->precio_unitario,
                         ];
                     })->values(),
                 ];
@@ -811,7 +811,7 @@ class PonchadosController extends Controller
                 ->where('servicios_ponchados_ventas.estatus','!=','Entregado')
                 ->with(['ponchado', 'cliente', 'clasificacionUbicacion', 'formasPago'])
                 ->get();
-            
+
             // Modificar cada producto para agregar la URL completa de la imagen
             /*$ponchados = $ponchados->map(function ($producto) {
                 return [
@@ -859,5 +859,5 @@ class PonchadosController extends Controller
 
             return response()->json(['data' => $ponchados]);
         }
-    }    
+    }
 }

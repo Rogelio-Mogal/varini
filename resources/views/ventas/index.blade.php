@@ -19,12 +19,12 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 md:grid-cols-12 sm:grid-cols-12 gap-4">
             <div class="sm:col-span-12 lg:col-span-12 md:col-span-12">
 
-                <button id="pasarSeleccionados" 
+                <button id="pasarSeleccionados"
                     class="mb-3 bg-orange-600 text-white px-3 py-2 rounded hover:bg-orange-700">
                     Pasar seleccionados a venta
                 </button>
 
-                <button id="generarTicketSeleccionados" 
+                <button id="generarTicketSeleccionados"
                         class="mb-3 bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700">
                     Generar Ticket Seleccionados
                 </button>
@@ -46,7 +46,7 @@
                             <tr>
                                 <td>
                                     @if($item['tipo'] == 'pedido' && $item['estatus'] == 'Finalizado')
-                                        <input type="checkbox" class="pedido-check" name="{{ $item['referencia_cliente'] }}" value="{{ $item['referencia_cliente'] }}">
+                                        <input type="checkbox" class="pedido-check" name="{{ $item['referencia_cliente'] }}" value="{{ $item['referencia_cliente'] }}" data-cliente-nombre="{{ $item['cliente'] }}">
                                     @elseif($item['tipo'] == 'venta')
                                         <input type="checkbox" class="venta-check" name="{{ $item['id'] }}" value="{{ $item['id'] }}">
                                     @endif
@@ -57,7 +57,7 @@
                                 <td>{{ $item['cliente'] }}</td>
                                 <td>{{ \Carbon\Carbon::parse($item['fecha'])->format('d/m/Y') }}</td>
 
-                                
+
                                 {{--
                                 <td> {{ '$' . number_format($item->total, 2, '.', ',') }} </td>
                                 <td>
@@ -71,7 +71,7 @@
                                 --}}
                                 <td>
                                     @if ($item['activo'] == 1 || $item['activo'] == 2)
-                                     
+
                                         <!-- Botón para pasar a venta (solo para pedidos finalizados) -->
                                         @if($item['tipo'] == 'pedido' && $item['estatus'] == 'Finalizado')
                                             <a href="{{ route('admin.ventas.create', ['referencia_cliente' => $item['referencia_cliente']]) }}"
@@ -110,7 +110,7 @@
                                         @endif
 
                                         {{--
-                                        <a href="{{ route('admin.ventas.create', ['referencia_cliente' => $item['referencia_cliente']]) }}" 
+                                        <a href="{{ route('admin.ventas.create', ['referencia_cliente' => $item['referencia_cliente']]) }}"
                                         class="text-white bg-green-600 hover:bg-green-700 px-3 py-1 rounded">Crear venta</a>
 
                                         <a href="{{ route('admin.ventas.edit', $item['id']) }}"
@@ -165,10 +165,14 @@
 
 @section('js')
     <script>
-
         $(document).ready(function() {
-            var VentaTable = new DataTable('#venta', {
+            //var VentaTable = new DataTable('#venta', {
+            var VentaTable = $('#venta').DataTable({
                 responsive: true,
+                order: [[4, 'asc'], [5, 'asc']], // ORDENA por cliente y fecha
+                rowGroup: {
+                    dataSrc: 4  // columna 4 → Cliente
+                },
                 "language": {
                     "url": "{{ asset('/json/i18n/es_es.json') }}"
                 },
@@ -185,6 +189,7 @@
 
             // pasar seleccionados a venta
             $('#pasarSeleccionados').on('click', function() {
+                /*
                 let seleccionados = $('.pedido-check:checked')
                     .map(function() { return $(this).val(); }).get();
 
@@ -195,6 +200,41 @@
 
                 // Enviar por GET al create
                 let url = "{{ route('admin.ventas.create') }}?referencia_cliente=" + seleccionados.join(',');
+
+                window.location.href = url;
+                */
+               let seleccionados = $('.pedido-check:checked');
+
+                if (seleccionados.length === 0) {
+                    alert('Selecciona al menos un pedido');
+                    return;
+                }
+
+                // Obtener nombre del cliente del primer pedido
+                let clienteBase = seleccionados.first().data('cliente-nombre');
+
+                // Validar que todos los seleccionados tengan el MISMO cliente
+                let mezcla = false;
+
+                seleccionados.each(function() {
+                    if ($(this).data('cliente-nombre') !== clienteBase) {
+                        mezcla = true;
+                        return false; // detener loop
+                    }
+                });
+
+                if (mezcla) {
+                    alert('Solo puedes seleccionar pedidos del mismo cliente.');
+                    return;
+                }
+
+                // Construir lista de referencias_cliente ya existentes en tu código
+                let valores = seleccionados.map(function() {
+                    return $(this).val();
+                }).get();
+
+                // Enviar por GET al create
+                let url = "{{ route('admin.ventas.create') }}?referencia_cliente=" + valores.join(',');
                 window.location.href = url;
             });
 

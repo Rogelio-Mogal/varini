@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('full_name')->unique();
             $table->string('telefono')->unique();
             $table->string('direccion')->nullable();
-            $table->string('email')->unique();
+            $table->string('email')->nullable()->unique();
             $table->decimal('precio_puntada',$precision = 10, $scale = 2);
             $table->enum('tipo_cliente',[
                 'CLIENTE PÚBLICO',
