@@ -733,6 +733,8 @@ class PonchadosController extends Controller
                 ->get()
                 ->groupBy('referencia_cliente');*/
 
+
+            /*
             $ponchados = ServiciosPonchadosVenta::query()
             // 1️⃣ SOLO REGISTROS VISIBLES
             ->where('activo', 1)
@@ -757,6 +759,31 @@ class PonchadosController extends Controller
 
             // 5️⃣ EJECUCIÓN
             ->get()
+            ->groupBy('referencia_cliente');
+            */
+
+
+            $ponchados = ServiciosPonchadosVenta::query()
+
+            // 1️⃣ SOLO REGISTROS ACTIVOS (1 y 2)
+            ->whereIn('activo', [1, 2])
+
+            // 2️⃣ EXCLUIR ESTATUS NO DESEADOS
+            ->whereNotIn('estatus', ['Entregado', 'Eliminado'])
+
+            // 3️⃣ RELACIONES
+            ->with(['ponchado', 'cliente', 'clasificacionUbicacion'])
+
+            // 4️⃣ EXCLUIR LOS QUE YA ESTÁN EN VENTA
+            ->whereDoesntHave('ventaDetalles')
+
+            // 5️⃣ ORDEN
+            ->orderBy('fecha_estimada_entrega', 'asc')
+
+            // 6️⃣ EJECUTAR
+            ->get()
+
+            // 7️⃣ AGRUPAR POR PEDIDO
             ->groupBy('referencia_cliente');
 
             // Modificar cada producto para agregar la URL completa de la imagen
