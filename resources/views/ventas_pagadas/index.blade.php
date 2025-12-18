@@ -21,10 +21,9 @@
     <div class="shadow-md rounded-lg p-4 dark:bg-gray-800">
         <div class="grid grid-cols-1 lg:grid-cols-12 md:grid-cols-12 sm:grid-cols-12 gap-4">
             <div class="sm:col-span-12 lg:col-span-12 md:col-span-12">
-
-                <div class="sm:col-span-12 lg:col-span-12 md:col-span-12">
-                    <form id="filtroForm">
-                        <div class="grid grid-cols-12 gap-3">
+                <form id="filtroForm">
+                    <div class="grid lg:grid-cols-12 md:grid-cols-12 sm:grid-cols-12 gap-2 items-end">
+                        <div class="sm:col-span-12 lg:col-span-4 md:col-span-4">
                             <!-- TIPO DE FILTRO -->
                             <div class="col-span-4">
                                 <label class="block mb-2 text-sm font-medium text-gray-900">Tipo de filtro</label>
@@ -43,27 +42,31 @@
                                     </label>
                                 </div>
                             </div>
+                        </div>
+                        <div id="filtroMes" class="sm:col-span-12 lg:col-span-2 md:col-span-2 hidden">
                             <!-- FILTRO POR MES -->
-                            <div id="filtroMes" class="col-span-2 hidden">
-                                <label class="block mb-2 text-sm font-medium text-gray-900">Mes</label>
-                                <input type="month" id="mes" class="bg-gray-50 border border-gray-300 rounded-lg p-2.5 w-full"
-                                value="{{ isset($mes) ? $mes : $now->format('Y-m') }}">
-                            </div>
+                            <label class="block mb-2 text-sm font-medium text-gray-900">Mes</label>
+                            <input type="month" id="mes" class="bg-gray-50 border border-gray-300 rounded-lg p-2.5 w-full"
+                            value="{{ isset($mes) ? $mes : $now->format('Y-m') }}">
+                        </div>
+                        <div id="filtroRango" class="sm:col-span-12 lg:col-span-3 md:col-span-3 hidden">
                             <!-- RANGO DE FECHAS -->
-                            <div id="filtroRango" class="col-span-3 hidden grid grid-cols-8 gap-3">
-                                <div class="col-span-4">
+                            <div class="flex gap-2 mr-2">
+                                <div class="w-1/2">
                                     <label class="block mb-2 text-sm font-medium text-gray-900">Fecha inicio</label>
                                     <input type="date" id="fechaInicio"
                                         class="bg-gray-50 border border-gray-300 rounded-lg p-2.5 w-full"
                                         value="{{ $fechaActual }}">
                                 </div>
-                                <div class="col-span-4">
+                                <div class="w-1/2">
                                     <label class="block mb-2 text-sm font-medium text-gray-900">Fecha fin</label>
                                     <input type="date" id="fechaFin"
                                         class="bg-gray-50 border border-gray-300 rounded-lg p-2.5 w-full"
                                         value="{{ $fechaActual }}">
                                 </div>
                             </div>
+                        </div>
+                        <div class="sm:col-span-12 lg:col-span-2 md:col-span-2">
                             <!-- BOTONES -->
                             <div class="col-span-3 flex gap-2 mt-0 items-end">
                                 <button type="button" id="btnFiltrar" data-tooltip-target="tooltip-filtrar" data-tooltip-placement="bottom"
@@ -107,12 +110,12 @@
                                     Generar ticket (seleccionados)
                                     <div class="tooltip-arrow" data-popper-arrow></div>
                                 </div>
+                                <div class="h-[28px]"></div>
                             </div>
                         </div>
-                    </form>
-                </div>
+                    </div>
+                </form>
                 <br>
-
                 <table id="venta" class="table table-striped" style="width:100%">
                     <thead>
                         <tr>
@@ -131,7 +134,6 @@
             </div>
         </div>
     </div>
-
 @endsection
 
 @section('js')
@@ -141,11 +143,9 @@
             cargarVentas();
 
             function cargarVentas() {
-
                 if ($.fn.DataTable.isDataTable('#venta')) {
                     $('#venta').DataTable().clear().destroy();
                 }
-
                 // ORDENAR CANTIDADES CON FORMATO "$1,234.56"
                 $.extend($.fn.dataTable.ext.type.order, {
                     "currency-mx-pre": function (data) {
@@ -157,7 +157,6 @@
                         );
                     }
                 });
-
                 tblVentas = $('#venta').DataTable({
                     processing: true,
                     serverSide: false, // cambiar a true si quieres paginación del lado del servidor
@@ -166,10 +165,8 @@
                     rowGroup: {
                         dataSrc: 'cliente',
                         startRender: function (rows, group) {
-
                             // IDs de filas visibles del grupo
                             let rowsNodes = rows.nodes();
-
                             // Checkbox del encabezado
                             let checkbox = `
                                 <input type="checkbox"
@@ -177,7 +174,6 @@
                                     data-cliente="${group}"
                                     style="margin-right:8px">
                             `;
-
                             return `
                                 <div class="flex items-center gap-2">
                                     ${checkbox}
@@ -206,7 +202,6 @@
                             data: null,
                             orderable: false,
                             render: function (data, type, row) {
-
                                 if (row.tipo === 'venta') {
                                     return `
                                         <input type="checkbox"
@@ -216,7 +211,6 @@
                                             data-cliente-nombre="${row.cliente}">
                                     `;
                                 }
-
                                 return '';
                             }
                         },
@@ -233,7 +227,6 @@
                             data: 'fecha',
                             render: function (data) {
                                 if (!data) return '';
-
                                 const fecha = new Date(data + 'T00:00:00');
                                 return fecha.toLocaleDateString('es-MX');
                             }
@@ -246,7 +239,6 @@
                     ],
                     language: { url: "{{ asset('/json/i18n/es_es.json') }}" }
                 });
-
                 //  Re-inicializa Flowbite cada vez que DataTables repinta
                 tblVentas.on('draw', function () {
                     if (typeof window.initFlowbite === "function") {
@@ -259,24 +251,19 @@
             $("#reloadTable").on("click", function() {
                 $// Dejar seleccionado NINGUNO
                 $("#radioNinguno").prop("checked", true);
-
                 // Ocultar ambos filtros
                 $("#filtroMes").addClass("hidden");
                 $("#filtroRango").addClass("hidden");
-
                 // Limpiar valores
                 $("#mes").val("");
                 $("#fechaInicio").val("");
                 $("#fechaFin").val("");
-
                 cargarVentas();
             });
 
             // Mostrar u ocultar filtros según selección
             $("input[name='tipoFiltro']").on("change", function () {
-
                 let tipo = $(this).val();
-
                 if (tipo === "MES") {
                     $("#filtroMes").removeClass("hidden");
                     $("#filtroRango").addClass("hidden");
@@ -290,74 +277,30 @@
             });
 
             // FILTRAR (envío AJAX al DataTable)
-            $("#btnFiltrar_NO").on("click", function () {
-
-                let tipo = $("input[name='tipoFiltro']:checked").val();
-
-                let postData = {
-                    _token: $('meta[name="csrf-token"]').attr('content'),
-                    origen: "ventas.pagadas",
-                };
-
-                if (tipo === "MES") {
-                    postData.mes_hidden = "MES";
-                    postData.mes = $("#mes").val();
-                }
-
-                if (tipo === "RANGO") {
-                    postData.rango = "RANGO";
-                    postData.fechaInicio = $("#fechaInicio").val();
-                    postData.fechaFin = $("#fechaFin").val();
-                }
-
-                if (tipo === "NINGUNO") {
-                    postData.filtro = "NINGUNO";
-                }
-
-                // Ahora SÍ enviamos los datos correctamente al DataTable
-                tblVentas.ajax.reload(null, false);
-                tblVentas.ajax.params = postData;
-
-                tblVentas.settings()[0].ajax.data = function(d){
-                    return $.extend(d, postData);
-                };
-
-                tblVentas.ajax.reload();
-            });
-
             $("#btnFiltrar").on("click", function () {
-
                 let tipoFiltro = $("input[name='tipoFiltro']:checked").val();
-
                 tblVentas.settings()[0].ajax.data = function (d) {
-
                     d._token = $('meta[name="csrf-token"]').attr('content');
                     d.origen = "ventas.pagadas";
                     d.tipoFiltro = tipoFiltro;
-
                     if (tipoFiltro === "MES") {
                         d.mes = $("#mes").val();
                     }
-
                     if (tipoFiltro === "RANGO") {
                         d.fechaInicio = $("#fechaInicio").val();
                         d.fechaFin = $("#fechaFin").val();
                     }
-
                     // NINGUNO no envía fechas
                     return d;
                 };
-
                 tblVentas.ajax.reload();
             });
 
 
             // seleccionar / deseleccionar pedidos por cliente (rowGroup)
             $('#venta').on('change', '.group-check', function () {
-
                 let cliente = $(this).data('cliente');
                 let checked = this.checked;
-
                 // Selecciona SOLO los pedidos de ese cliente
                 $('.pedido-check').each(function () {
                     if ($(this).data('cliente-nombre') === cliente) {
@@ -368,14 +311,10 @@
 
             // Cuando se desmarca un solo pedido, el checkbox del grupo debe actualizarse.
             $('#venta').on('change', '.pedido-check', function () {
-
                 let cliente = $(this).data('cliente-nombre');
-
                 let total = $('.pedido-check[data-cliente-nombre="' + cliente + '"]').length;
                 let checked = $('.pedido-check[data-cliente-nombre="' + cliente + '"]:checked').length;
-
                 let groupCheckbox = $('.group-check[data-cliente="' + cliente + '"]');
-
                 if (checked === total) {
                     groupCheckbox.prop('checked', true);
                 } else {
@@ -385,7 +324,8 @@
 
 
             // pasar seleccionados a venta
-            $('#pasarSeleccionados').on('click', function() {
+            $('#pasarSeleccionados').on('click', function(e) {
+                e.preventDefault();
                 /*
                 let seleccionados = $('.pedido-check:checked')
                     .map(function() { return $(this).val(); }).get();
@@ -432,34 +372,31 @@
 
                 // Enviar por GET al create
                 let url = "{{ route('admin.ventas.create') }}?referencia_cliente=" + valores.join(',');
-                window.location.href = url;
+                //window.location.href = url;
+                window.open(url, '_blank'); // abrir ticket en nueva pestaña
             });
 
             // generar ticket seleccionados
-            $('#generarTicketSeleccionados').on('click', function() {
+            $('#generarTicketSeleccionados').on('click', function(e) {
+                e.preventDefault();
                 let seleccionados = [];
-
                 // recolectar pedidos seleccionados
                 $('.pedido-check:checked').each(function() {
                     seleccionados.push($(this).val());
                 });
-
                 // si también quieres ventas seleccionadas
                 $('.venta-check:checked').each(function() {
                     seleccionados.push($(this).val());
                 });
-
                 if (seleccionados.length === 0) {
                     alert('Selecciona al menos un pedido o venta para generar el ticket.');
                     return;
                 }
                 console.log(seleccionados.join(','));
-
                 // construir la URL con las referencias seleccionadas
                 let urlBase = "{{ route('ticket.misto') }}"; // /ticket/mixto
                 //let url = urlBase + '?referencias=' + encodeURIComponent(seleccionados.join(','));
                 let url = urlBase + '?referencias=' + seleccionados.join(',');
-
                 window.open(url, '_blank'); // abrir ticket en nueva pestaña
             });
 
@@ -469,7 +406,6 @@
             $('#venta').on('click', '.delete-item', function(e) {
                 e.preventDefault();
                 var id = $(this).data('id');
-
                 // Utilizar SweetAlert2 para mostrar un mensaje de confirmación
                 Swal.fire({
                     title: '¿Estás seguro?',
@@ -508,7 +444,6 @@
             $('#venta').on('click', '.activa-item', function(e) {
                 e.preventDefault();
                 var id = $(this).data('id');
-
                 // Utilizar SweetAlert2 para mostrar un mensaje de confirmación
                 Swal.fire({
                     title: 'El proveedor está deshabilitada',

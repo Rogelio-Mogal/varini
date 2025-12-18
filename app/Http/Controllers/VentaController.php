@@ -27,7 +27,8 @@ class VentaController extends Controller
 
     public function index()
     {
-        return view('ventas.index');
+        $now = new \DateTime();
+        return view('ventas.index', compact('now'));
     }
 
     public function create(Request $request)
@@ -555,26 +556,76 @@ class VentaController extends Controller
         // VENTAS - PEDIDOS POR COBRAR
         if ($request->origen == 'ventas.por.cobrar') {
 
-            $porCobrar = ServiciosPonchadosVenta::whereIn('activo', [1, 2])
-                ->where('estatus', 'Finalizado')
-                ->whereBetween('fecha_estimada_entrega', [$hace7dias, $hoy])
-                ->with(['ponchado', 'cliente', 'clasificacionUbicacion'])
+            setlocale(LC_ALL, "Spanish");
+
+            $tipoFiltro  = $request->tipoFiltro;
+            $mes         = $request->mes;
+            $fechaInicio = $request->fechaInicio;
+            $fechaFin    = $request->fechaFin;
+
+             /*
+            |--------------------------------------------------------------------------
+            | 1. BASE QUERY (SIN EJECUTAR)
+            |--------------------------------------------------------------------------
+            */
+            $query = ServiciosPonchadosVenta::whereIn('activo', [1, 2])
+            ->where('estatus', 'Finalizado')
+            ->with(['ponchado', 'cliente', 'clasificacionUbicacion']);
+
+            /*
+            |--------------------------------------------------------------------------
+            | 2. APLICAR FILTROS DE FECHA
+            |--------------------------------------------------------------------------
+            | - Nada enviado     → Mes actual
+            | - MES              → Mes seleccionado
+            | - RANGO            → Entre fechas
+            */
+
+            if ($tipoFiltro=== 'NINGUNO') {
+
+                // Mes actual
+                $query->whereMonth('fecha_estimada_entrega', Carbon::now()->month)
+                    ->whereYear('fecha_estimada_entrega', Carbon::now()->year);
+            } elseif ($tipoFiltro === 'MES' && $mes) {
+
+                // Ej: "2025-07" → 07
+                [$anio, $mesNum] = explode('-', $mes);
+
+                $query->whereYear('fecha_estimada_entrega', $anio)
+                    ->whereMonth('fecha_estimada_entrega', $mesNum);
+
+            } elseif ($tipoFiltro === 'RANGO' && $fechaInicio && $fechaFin) {
+
+                $query->whereBetween('fecha_estimada_entrega', [
+                    "$fechaInicio 00:00:00",
+                    "$fechaFin 23:59:59"
+                ]);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | 3. EJECUTAR CONSULTA
+            |--------------------------------------------------------------------------
+            */
+            $porCobrar = $query
                 ->orderBy('fecha_estimada_entrega', 'asc')
                 ->get()
                 ->groupBy('referencia_cliente')
-                ->filter(function($items) {
-                    return $items->every(fn($item) => $item->estatus === 'Finalizado');
+                ->filter(function ($items) {
+                    return $items->every(fn ($item) => $item->estatus === 'Finalizado');
                 })
                 ->map(function ($items, $referencia) {
+
                     $item = $items->first();
-                    return collect ([
+
+                    return collect([
                         'id' => $referencia,
                         'tipo' => 'pedido',
                         'referencia_cliente' => $referencia,
-                        'cliente' => $items->first()->cliente->full_name ?? 'CLIENTE PÚBLICO',
-                        'fecha' => $items->first()->fecha_estimada_entrega,
-                        'estatus' => $items->first()->estatus,
-                        'activo' => $items->first()->activo, // 👈 lo agregamos
+                        'cliente' => $item->cliente->full_name ?? 'CLIENTE PÚBLICO',
+                        'fecha' => $item->fecha_estimada_entrega,
+                        'estatus' => $item->estatus,
+                        'activo' => $item->activo,
                         'acciones' => view('ventas.partials.acciones', [
                             'item' => [
                                 'id' => $item->id,
@@ -597,13 +648,12 @@ class VentaController extends Controller
                             ];
                         })->values(),
                     ]);
-            })
-            ->sortBy([
-                ['cliente', 'asc'],
-                ['fecha', 'asc'],
-            ])
-            ->values();
-
+                })
+                ->sortBy([
+                    ['cliente', 'asc'],
+                    ['fecha', 'asc'],
+                ])
+                ->values();
 
             return response()->json(['data' => $porCobrar]);
         }

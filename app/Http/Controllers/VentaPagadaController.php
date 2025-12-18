@@ -171,62 +171,6 @@ class VentaPagadaController extends Controller
             |--------------------------------------------------------------------------
             */
             return response()->json(['data' => $pagado]);
-
-
-            /*
-            setlocale(LC_ALL, "Spanish");
-
-            $mes         = $request->mes;
-            $fechaInicio = $request->fechaInicio;
-            $fechaFin    = $request->fechaFin;
-
-            $pagado = Venta::with(['cliente','detalles.producto','detalles.servicioPonchado'])
-            ->whereBetween('fecha', [$hace7dias, $hoy])
-            ->orderBy('fecha', 'asc')
-            ->get()
-            ->map(function ($venta) {
-                $item = $venta->first();
-                return collect([
-                    'id' => $venta->id,
-                    'tipo' => 'venta',
-                    'referencia_cliente' => $venta->folio,
-                    'cliente' => $venta->cliente->full_name ?? 'CLIENTE PÚBLICO',
-                    'fecha' => $venta->fecha,
-                    'estatus' => 'Vendido',
-                    'activo' => $venta->activo ?? 1,
-                    'acciones' => view('ventas.partials.acciones', [
-                        'item' => [
-                            'id' => $venta->id,
-                            'tipo' => 'venta',
-                            'estatus' => $item->estatus,
-                            'activo' => $item->activo,
-                            'referencia_cliente' => $item->referencia_cliente,
-                        ]
-                    ])->render(),
-                    'detalles' => $venta->detalles->map(function ($detalle) {
-                        return [
-                            'id' => $detalle->id,
-                            'img_thumb' => $detalle->producto?->imagen
-                                ? asset('storage/' . ltrim($detalle->producto->imagen, '/'))
-                                : asset('images/default.png'),
-                            'nombre' => $detalle->producto->nombre
-                                ?? $detalle->servicioPonchado->ponchado->nombre
-                                ?? $detalle->producto_comun,
-                            'clasificacion' => $detalle->servicioPonchado?->clasificacionUbicacion->nombre,
-                            'cantidad' => $detalle->cantidad,
-                            'activo' => $detalle->activo,
-                        ];
-                    })->values(),
-                ]);
-            })
-            ->sortBy([
-                ['cliente', 'asc'],
-                ['fecha', 'asc'],
-            ])
-            ->values();
-
-            return response()->json(['data' => $pagado]);
-            */
         }
     }
 }
