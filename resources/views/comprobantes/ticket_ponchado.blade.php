@@ -104,7 +104,7 @@ if ($userPrinterSize == '58') {
         {{-- <img src="{{ $base64 }}" width="145" height="auto" /> --}}
         <h1>Puerto Escondido No. 407</h1>
         <h2>Col. Eliseo Jiménez Ruiz. Oaxaca, Oax.</h2>
-        <h2>951 244 21 08  varinipaz@hotmail.com</h2> 
+        <h2>951 244 21 08  varinipaz@hotmail.com</h2>
         <h2>Lunes a Viernes</h2>
         <h2>10:00 a 14:00 y de 16:00 a 19:00 Hrs</h2>
         <h2>Sábado</h2>
@@ -112,7 +112,15 @@ if ($userPrinterSize == '58') {
 
         @foreach ($pedidos as $pedido)
             <p><strong>{{ $pedido->referencia_cliente }}</strong> </p>
-            <p><strong>Cliente:</strong> {{ $pedido->cliente->full_name }}</p>
+
+            <p><strong>Cliente:
+                {{ $pedido->cliente_id == 17
+                    ? ($pedido->cliente_alias ?? 'CLIENTE PÚBLICO')
+                    : ($pedido->cliente->full_name ?? 'CLIENTE PÚBLICO')
+                }}
+                </strong>
+            </p>
+
             <p><strong>Fecha estimada de entrega:</strong> {{ \Carbon\Carbon::parse($pedido->fecha_estimada_entrega)->format('d/m/Y') }}</p>
             @break
         @endforeach
@@ -238,7 +246,7 @@ if ($userPrinterSize == '58') {
                     </tr>
                 @endforeach
             </tbody>
-         
+
             <tr>
                 <td class="cantidad"></td>
                 <td class="producto">

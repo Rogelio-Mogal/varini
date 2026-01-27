@@ -128,7 +128,12 @@ class VentaPagadaController extends Controller
                     'id' => $venta->id,
                     'tipo' => 'venta',
                     'referencia_cliente' => $venta->folio,
-                    'cliente' => $venta->cliente->full_name ?? 'CLIENTE PÚBLICO',
+                    //'cliente' => $venta->cliente->full_name ?? 'CLIENTE PÚBLICO',
+
+                    'cliente' => $venta->cliente_id == 17
+                            ? ($venta->cliente_alias ?? 'CLIENTE PÚBLICO')
+                            : ($venta->cliente->full_name ?? 'CLIENTE PÚBLICO'),
+
                     'fecha' => $venta->fecha,
                     'estatus' => 'Vendido',
                     'activo' => $venta->activo ?? 1,

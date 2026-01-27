@@ -8,11 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 class ServiciosPonchadosVenta extends Model
 {
     use HasFactory;
-    protected $table = 'servicios_ponchados_ventas';    
+    protected $table = 'servicios_ponchados_ventas';
     protected $fillable = [
         'ponchado_id',
         'cliente_id',
         'producto_id',
+        'cliente_alias',
         'prenda',
         'clasificacion_ubicaciones_id',
         'cantidad_piezas',

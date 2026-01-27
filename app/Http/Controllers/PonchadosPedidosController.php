@@ -126,7 +126,7 @@ class PonchadosPedidosController extends Controller
         try {
             DB::beginTransaction();
 
-            //1. array auxiliar para guardar los pedidos con sus montos 
+            //1. array auxiliar para guardar los pedidos con sus montos
             $precio_puntada = floatval($request->precio_puntada);
             $pedidos_data = [];
 
@@ -164,7 +164,7 @@ class PonchadosPedidosController extends Controller
                 $numero = 1;
             }*/
 
-            
+
             //if ($ultimoFolio) {
             //    preg_match('/PEDIDO-(\d+)-' . $anio . '/', $ultimoFolio->referencia_cliente, $matches);
             //    $numero = isset($matches[1]) ? intval($matches[1]) + 1 : 1;
@@ -211,6 +211,7 @@ class PonchadosPedidosController extends Controller
                 $pedido->ponchado_id = $detalle['ponchado_id'];
                 $pedido->cliente_id = $request->cliente_id;
                 $pedido->producto_id = 2;
+                $pedido->cliente_alias = $request->cliente_alias;
                 $pedido->prenda = $detalle['prenda'];
                 $pedido->clasificacion_ubicaciones_id = $detalle['clasificacion_ubicaciones_id'];
                 $pedido->cantidad_piezas = $detalle['cantidad'];
@@ -467,6 +468,7 @@ class PonchadosPedidosController extends Controller
                     $detalle = new ServiciosPonchadosVenta();
                     $detalle->referencia_cliente = $referencia;
                     $detalle->producto_id = 2; // valor por defecto si aplica
+                    $detalle->cliente_alias = $request->cliente_alias;
                     $detalle->cliente_id = $request->cliente_id;
                     $detalle->fecha_recepcion = now();
                     $detalle->fecha_estimada_entrega = $request->fecha_estimada_entrega;

@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('servicios_ponchados_ventas', function (Blueprint $table) {
             $table->id();
             // Relaciones
-            $table->foreignId('ponchado_id') 
+            $table->foreignId('ponchado_id')
             ->references('id')
             ->on('ponchados')
             ->onUpdate('no action')
             ->onDelete('no action');
-            $table->foreignId('cliente_id') 
+            $table->foreignId('cliente_id')
             ->references('id')
             ->on('clientes')
             ->onUpdate('no action')
@@ -27,8 +27,9 @@ return new class extends Migration
             $table->foreignId('producto_id')->nullable()->constrained('productos')->onDelete('set null');
 
             // Datos del pedido
+            $table->string('cliente_alias')->nullable();
             $table->string('prenda')->nullable();
-            $table->foreignId('clasificacion_ubicaciones_id') 
+            $table->foreignId('clasificacion_ubicaciones_id')
             ->references('id')
             ->on('clasificacion_ubicaciones')
             ->onUpdate('no action')

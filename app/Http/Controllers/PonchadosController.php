@@ -807,7 +807,12 @@ class PonchadosController extends Controller
 
                 return [
                     'id' => $referencia,
-                    'cliente' => $items->first()->cliente ? $items->first()->cliente->full_name : null,
+                    //'cliente' => $items->first()->cliente ? $items->first()->cliente->full_name : null,
+
+                    'cliente' => $items->first()->cliente_id == 17
+                    ? ($items->first()->cliente_alias ?? 'CLIENTE PÚBLICO')
+                    : ($items->first()->cliente?->full_name ?? 'CLIENTE PÚBLICO'),
+
                     'referencia_cliente' => $referencia,
                     'fecha_estimada_entrega' => $items->first()->fecha_estimada_entrega,
                     //'estatus' => $items->first()->estatus,

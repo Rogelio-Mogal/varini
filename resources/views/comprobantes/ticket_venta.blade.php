@@ -98,22 +98,29 @@ if ($userPrinterSize == '58') {
 
 <body>
 
-
+    @php
+        $detalle = $venta->detalles->first();
+        $servicio = $detalle?->servicioPonchado;
+    @endphp
 
     <div class="ticket centrado">
         {{-- <img src="{{ $base64 }}" width="145" height="auto" /> --}}
         <h1>Puerto Escondido No. 407</h1>
         <h2>Col. Eliseo Jiménez Ruiz. Oaxaca, Oax.</h2>
-        <h2>951 244 21 08  varinipaz@hotmail.com</h2> 
+        <h2>951 244 21 08  varinipaz@hotmail.com</h2>
         <h2>Lunes a Viernes</h2>
         <h2>10:00 a 14:00 y de 16:00 a 19:00 Hrs</h2>
         <h2>Sábado</h2>
         <h2>10:00 a 15:00 Hrs</h2>
 
-        
-
         {{-- Datos generales --}}
-        <p><strong>Cliente:</strong> {{ $venta->cliente->full_name ?? 'CLIENTE PÚBLICO' }}</p>
+        <p><strong>Cliente:</strong>
+            {{ $servicio && $servicio->cliente_id == 17
+                ? ($servicio->cliente_alias ?? 'CLIENTE PÚBLICO')
+                : ($venta->cliente?->full_name ?? 'CLIENTE PÚBLICO')
+            }}
+        </p>
+
         <p><strong>Folio:</strong> {{ $venta->folio }}</p>
         <p><strong>Fecha:</strong> {{ \Carbon\Carbon::parse($venta->fecha)->format('d/m/Y H:i') }}</p>
 
@@ -137,7 +144,7 @@ if ($userPrinterSize == '58') {
                         -----------------------------------------------------------------------</td>
                 </tr>
                 @foreach ($venta->detalles as $detalle)
-        
+
                     @if ($detalle->activo == 0)
                         <span class="text-red-600 text-2xl font-bold">REGISTRO ELIMINADO</span>
                     @endif

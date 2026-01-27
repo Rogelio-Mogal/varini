@@ -622,7 +622,10 @@ class VentaController extends Controller
                         'id' => $referencia,
                         'tipo' => 'pedido',
                         'referencia_cliente' => $referencia,
-                        'cliente' => $item->cliente->full_name ?? 'CLIENTE PÚBLICO',
+                        //'cliente' => $item->cliente->full_name ?? 'CLIENTE PÚBLICO',
+                        'cliente' => $item->cliente_id == 17
+                            ? ($item->cliente_alias ?? 'CLIENTE PÚBLICO')
+                            : ($item->cliente->full_name ?? 'CLIENTE PÚBLICO'),
                         'fecha' => $item->fecha_estimada_entrega,
                         'estatus' => $item->estatus,
                         'activo' => $item->activo,

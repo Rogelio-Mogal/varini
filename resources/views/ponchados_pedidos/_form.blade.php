@@ -21,7 +21,7 @@
 
             <input type="hidden" id="precio_puntada" name="precio_puntada"
                 value="{{ old('precio_puntada', $pedidoBase->precio_puntada) }}">
-            <div class="sm:col-span-12 lg:col-span-8 md:col-span-8">
+            <div id="col-nombre-cliente" class="sm:col-span-12 lg:col-span-8 md:col-span-8">
                 <label for="nombre_cliente"
                     class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Cliente</label>
                 <input type="text" id="nombre_cliente" name="nombre_cliente" required
@@ -31,11 +31,30 @@
                     readonly />
             </div>
 
+            <!-- ALIAS -->
+            <div id="col-cliente-alias"
+                class="sm:col-span-12 lg:col-span-4 md:col-span-4 hidden">
+
+                <label for="cliente_alias"
+                    class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
+                    Alias del cliente
+                </label>
+
+                <input type="text"
+                    id="cliente_alias"
+                    name="cliente_alias"
+                    class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
+                    focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5
+                    dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    placeholder="Alias o referencia"
+                    value="{{ old('cliente_alias', $pedidoBase->cliente_alias ?? '') }}" >
+            </div>
+
             <div class="sm:col-span-12 lg:col-span-2 md:col-span-3 flex items-center mt-2">
-                <input 
-                    id="urgente" 
-                    name="urgente" 
-                    type="checkbox" 
+                <input
+                    id="urgente"
+                    name="urgente"
+                    type="checkbox"
                     value="2"
                     class="w-4 h-4 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500 dark:focus:ring-red-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
                     {{ isset($pedidoBase) && $pedidoBase->activo == 2 ? 'checked' : '' }}
@@ -390,7 +409,7 @@
                                 <button type="button" name="remove" class="remove remove-tr focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm p-2.5 me-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
                                     <svg class="w-6 h-6 text-white dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 9-6 6m0-6 6 6m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
-                                    </svg> 
+                                    </svg>
                                     <span class="sr-only">Quitar</span>
                                 </button>
                             </td>
@@ -515,6 +534,37 @@
             $removeButton.classList.add('hidden'); // Ocultamos el botón de quitar
         }
 
+        function validarClienteAlias() {
+
+            let clienteId = parseInt($('#cliente_id').val());
+
+            if (clienteId === 17) {
+                // Mostrar alias
+                $('#col-cliente-alias').removeClass('hidden');
+
+                // Reducir tamaño del input cliente
+                $('#col-nombre-cliente')
+                    .removeClass('lg:col-span-8 md:col-span-8')
+                    .addClass('lg:col-span-4 md:col-span-4');
+
+            } else {
+
+                // Ocultar alias
+                $('#col-cliente-alias').addClass('hidden');
+
+                // Regresar tamaño normal
+                $('#col-nombre-cliente')
+                    .removeClass('lg:col-span-4 md:col-span-4')
+                    .addClass('lg:col-span-8 md:col-span-8');
+
+                // Limpiar valor
+                $('#cliente_alias').val('');
+            }
+        }
+
+        // Ejecutar al cargar
+        validarClienteAlias();
+
 
         $(document).ready(function() {
 
@@ -585,6 +635,12 @@
                 if (!isNaN(currentValue) && currentValue > 1) {
                     $('#cantidad').val(currentValue + 1);
                 }
+            });
+
+            // Ejecutar cuando cambie el cliente (modal / ajax / select)
+            //$(document).on('change', '#cliente_id', function () {
+            $('#cliente_id').on('change', function() {
+                validarClienteAlias();
             });
 
             // APERTURA MODAL PONCHADOS, ASIGNA PONCHADO POR DEFINIR
@@ -927,8 +983,7 @@
                         var precio_puntada = data['precio_puntada'];
                         var cantidad_pieza = data['precio_puntada'];
 
-
-                        $('#cliente_id').val(cliente_id);
+                        $('#cliente_id').val(cliente_id).trigger('change');
                         $('#nombre_cliente').val(nombre_cliente);
                         //$('#precio_unitario').val(precio_puntada);
                         $('#precio_puntada').val(precio_puntada).attr('min', precio_puntada);
@@ -988,7 +1043,7 @@
                 recalcularTotalTabla('item_table_0');
             });
 
-            // cambio de forma de pago 
+            // cambio de forma de pago
             $(document).on('input', '.forma-pago', function() {
                 recalcularFaltanteCambio();
             });
