@@ -55,15 +55,17 @@ class PrecioPonchadoController extends Controller
         }
 
         return view('ponchados_precios.create', compact('metodo','ponchado','detalle','cliente'));
-        
+
     }
 
     public function store(Request $request)
     {
         $rules = [
             // Validación para arrays dinámicos (fondos clonables)
+            'detalles' => 'required|array|min:1',
             'detalles.*.ponchado_id' => 'required|exists:ponchados,id',
-            'detalles.*.precio.*' => 'required|numeric|min:0',
+            //'detalles.*.precio.*' => 'required|numeric|min:0',
+            'detalles.*.precio' => 'required|numeric|min:0',
         ];
 
         // 3. Definir nombres personalizados para errores más legibles
@@ -83,7 +85,8 @@ class PrecioPonchadoController extends Controller
 
             foreach ($errors->getMessages() as $field => $messages) {
                 // Personaliza solo los errores de color o código en los bloques dinámicos
-                if (preg_match('/detalles\.(\d+)\.(ponchado_id|precio)\.(\d+)/', $field, $matches)) {
+                //if (preg_match('/detalles\.(\d+)\.(ponchado_id|precio)\.(\d+)/', $field, $matches)) {
+                if (preg_match('/detalles\.(\d+)\.(ponchado_id|precio)/', $field, $matches)) {
                     $bloque = $matches[1] + 1;
                     $campo = $matches[2];
                     $item = $matches[3] + 1;
@@ -109,7 +112,7 @@ class PrecioPonchadoController extends Controller
 
         try {
             //dd($request->detalles);
-            //1. array auxiliar para guardar los pedidos con sus montos 
+            //1. array auxiliar para guardar los pedidos con sus montos
             $pedidos_data = [];
 
             foreach ($request->detalles as $detalle) {
@@ -139,9 +142,9 @@ class PrecioPonchadoController extends Controller
                 ],
                 'buttonsStyling' => false
             ]);
-    
+
             return redirect()->route('admin.precio.ponchado.index');
-            
+
         } catch (\Exception $e) {
             session()->flash('swal', [
                 'icon' => "error",
@@ -178,7 +181,7 @@ class PrecioPonchadoController extends Controller
             return view('ponchados_precios.edit', compact('ponchado','metodo'));
         }else{
             return redirect()->route('admin.precio.ponchado.index');
-        } 
+        }
     }
 
     public function update(Request $request, $id)
@@ -197,7 +200,7 @@ class PrecioPonchadoController extends Controller
             ];
 
             $validatedData = $request->validate($rules);
-        
+
             try {
                 $ponchado->precio = $request->precio;
                 $ponchado->cliente_id = $request->cliente_id;
@@ -240,7 +243,7 @@ class PrecioPonchadoController extends Controller
                 ],
                 'buttonsStyling' => false
             ]);
-        
+
             return redirect()->route('admin.precio.ponchado.index');
         }
     }
@@ -250,7 +253,7 @@ class PrecioPonchadoController extends Controller
     {
         try {
             $ponchado = PrecioPonchado::findorfail($id);
-            
+
             if($ponchado->activo == 0){
                 return response()->json([
                     'swal' => [
@@ -284,7 +287,7 @@ class PrecioPonchadoController extends Controller
                 ], 200);
             }
 
-    
+
         } catch (\Exception $e) {
             session()->flash('swal', [
                 'icon' => "error",
@@ -313,8 +316,8 @@ class PrecioPonchadoController extends Controller
             $ponchados = $ponchados->map(function ($producto) {
                 return [
                     'id' => $producto->id,
-                    'img_thumb' => $producto->ponchadoRelacionado->imagen_1 
-                        ? asset('storage/' . ltrim($producto->ponchadoRelacionado->imagen_1, '/')) 
+                    'img_thumb' => $producto->ponchadoRelacionado->imagen_1
+                        ? asset('storage/' . ltrim($producto->ponchadoRelacionado->imagen_1, '/'))
                         : asset('images/default.png'),
                     'nombre' => $producto->ponchadoRelacionado->nombre,
                     'ponchado_id' => $producto->ponchadoRelacionado->id,
@@ -331,7 +334,7 @@ class PrecioPonchadoController extends Controller
             $ponchados = ServiciosPonchadosVenta::where('servicios_ponchados_ventas.activo', 1)
                 ->with(['ponchado', 'cliente', 'clasificacionUbicacion'])
                 ->get();
-            
+
                 // Modificar cada producto para agregar la URL completa de la imagen
             $ponchados = $ponchados->map(function ($producto) {
                 return [
@@ -354,5 +357,5 @@ class PrecioPonchadoController extends Controller
             return response()->json(['data' => $ponchados]);
         }
 
-    } 
+    }
 }
