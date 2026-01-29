@@ -769,7 +769,7 @@ class PonchadosController extends Controller
             ->whereIn('activo', [1, 2])
 
             // 2️⃣ EXCLUIR ESTATUS NO DESEADOS
-            ->whereNotIn('estatus', ['Entregado', 'Eliminado'])
+            ->whereNotIn('estatus', ['Entregado', 'Eliminado', 'Finalizado'])
 
             // 3️⃣ RELACIONES
             ->with(['ponchado', 'cliente', 'clasificacionUbicacion'])
