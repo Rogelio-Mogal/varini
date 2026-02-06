@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ClasificacionUbicaciones;
+use App\Models\Configuration;
 use App\Models\FormaPagos;
 use App\Models\PonchadoDetalles;
 use App\Models\Ponchados;
@@ -817,12 +818,15 @@ class PonchadosPedidosController extends Controller
             default => [0, 0, 0, 0],
         };
 
+        $config = Configuration::first();
+
         $pdf = PDF::loadView('comprobantes.ticket_ponchado', compact(
             'pedidos',
             'userPrinterSize',
             'totalVenta',
             'totalPagado',
-            'totalFaltante'
+            'totalFaltante',
+            'config'
         ))
             ->setPaper($size, 'portrait');
 

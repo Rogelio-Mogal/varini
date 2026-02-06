@@ -101,7 +101,7 @@ if ($userPrinterSize == '58') {
 
 
     <div class="ticket centrado">
-        {{-- <img src="{{ $base64 }}" width="145" height="auto" /> --}}
+        <img src="{{ public_path('storage/'.$config->imagen) }}" width="120" height="auto" />
         <h1>Puerto Escondido No. 407</h1>
         <h2>Col. Eliseo Jiménez Ruiz. Oaxaca, Oax.</h2>
         <h2>951 244 21 08  varinipaz@hotmail.com</h2>
@@ -125,15 +125,105 @@ if ($userPrinterSize == '58') {
             @break
         @endforeach
 
+        <table width="97%" cellspacing="0" cellpadding="0" align="center" style="margin-left:10px;margin-right:10px;">
 
-        <table>
+            <colgroup>
+                <col width="20%">
+                <col width="40%">
+                <col width="40%">
+            </colgroup>
+
+            <thead>
+
+                <tr>
+                    <td colspan="3" style="border-bottom:1px dashed #000;height:6px;"></td>
+                </tr>
+
+                <tr>
+                    <th class="cantidad">CANT.</th>
+                    <th class="producto">PU.</th>
+                    <th class="precio">IMP.</th>
+                </tr>
+
+                <tr>
+                    <td colspan="3" style="border-bottom:1px dashed #000;height:6px;"></td>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @foreach ($pedidos as $pedido)
+
+                    @if ($pedido->activo == 0)
+                    <tr>
+                        <td colspan="3" style="text-align:center;font-weight:bold">
+                            REGISTRO ELIMINADO
+                        </td>
+                    </tr>
+                    @endif
+
+                    {{-- PRODUCTO (sin colspan completo) --}}
+                    <tr>
+                        <td></td>
+                        <td colspan="2" style="font-size:9px;text-align:left;word-wrap:break-word;">
+                            {{ $pedido->ponchado->nombre ?? 'Sin nombre' }} |
+                            {{ $pedido->clasificacionUbicacion->nombre }} |
+                            {{ $pedido->prenda }}
+                        </td>
+                    </tr>
+
+                    {{-- VALORES --}}
+                    <tr>
+                        <td class="cantidad">{{ $pedido->cantidad_piezas }}</td>
+                        <td class="cantidad">${{ number_format($pedido->precio_unitario,2) }}</td>
+                        <td class="precio">${{ number_format($pedido->cantidad_piezas * $pedido->precio_unitario,2) }}</td>
+                    </tr>
+
+                    {{-- SEPARADOR --}}
+                    <tr>
+                        <td colspan="3" style="border-bottom:1px dashed #000;height:6px;"></td>
+                    </tr>
+
+                @endforeach
+
+            </tbody>
+
+            <tfoot>
+
+                <tr>
+                    <td></td>
+                    <td><strong>TOTAL</strong></td>
+                    <td class="precio">${{ number_format($totalVenta, 2) }}</td>
+                </tr>
+
+                <tr>
+                    <td></td>
+                    <td><strong>TOTAL PAGADO</strong></td>
+                    <td class="precio">${{ number_format($totalPagado, 2) }}</td>
+                </tr>
+
+                <tr>
+                    <td></td>
+                    <td><strong>FALTANTE</strong></td>
+                    <td class="precio">${{ number_format($totalFaltante, 2) }}</td>
+                </tr>
+
+            </tfoot>
+
+        </table>
+
+
+
+    {{--
+        <table align="center">
             <thead>
                 <tr>
                     <td class="producto" colspan="3">
                         -----------------------------------------------------------------------</td>
                 </tr>
                 <tr class="centrado">
-                    <th class="cantidad">CANT</th>
+                    <th class="cantidad">CANT.</th>
                     <th class="producto">PU.</th>
                     <th class="precio">IMP.</th>
                 </tr>
@@ -142,7 +232,11 @@ if ($userPrinterSize == '58') {
             <tbody>
                 <tr>
                     <td class="producto" colspan="3">
-                        -----------------------------------------------------------------------</td>
+                        -----------------------------------------------------------------------
+                    </td>
+                    <tr>
+                        <td colspan="3" style="border-bottom:1px dashed #000;height:6px;"></td>
+                    </tr>
                 </tr>
                 @foreach ($pedidos as $pedido)
                     @if ($pedido->activo == 0)
@@ -156,6 +250,7 @@ if ($userPrinterSize == '58') {
                             {{ $pedido->prenda }}
                         </td>
                     </tr>
+
                     <tr>
                         <td class="cantidad">{{ $pedido->cantidad_piezas }}</td>
                         <td class="cantidad">{{ '$' . number_format($pedido->precio_unitario, 2, '.', ',') }}</td>
@@ -163,7 +258,8 @@ if ($userPrinterSize == '58') {
                     </tr>
                     <tr>
                         <td class="producto" colspan="3">
-                            -----------------------------------------------------------------------</td>
+                            -----------------------------------------------------------------------
+                        </td>
                     </tr>
                 @endforeach
             </tbody>
@@ -197,74 +293,8 @@ if ($userPrinterSize == '58') {
                     ${{ number_format($totalFaltante, 2) }}
                 </td>
             </tr>
-
         </table>
-
-
-
-
-
-        {{--
-        <table>
-            <thead>
-                <tr>
-                    <td class="producto" colspan="3">
-                        -----------------------------------------------------------------------</td>
-                </tr>
-                <tr class="centrado">
-                    <th class="cantidad">CANT</th>
-                    <th class="producto">PU.</th>
-                    <th class="precio">IMP.</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                <tr>
-                    <td class="producto" colspan="3">-----------------------------------------------------------------------</td>
-                </tr>
-
-                @foreach ($ventaArray['detalles'] as $detalle)
-
-                    <tr>
-                        <td class="producto uppercase" colspan="3">
-                            @if ($detalle['tipo_item'] === 'PRODUCTO' || $detalle['tipo_item'] === 'SERVICIO')
-                                {{ $detalle['producto']['nombre'] ?? 'N/A' }}
-                            @elseif ($detalle['tipo_item'] === 'PONCHADO')
-                                {{ $detalle['servicio_ponchado']['referencia_cliente'] ?? 'N/A' }}
-                            @else
-                                N/A
-                            @endif
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="cantidad">{{ $detalle['cantidad'] }}</td>
-                        <td class="cantidad">${{ number_format($detalle['precio'], 2) }}</td>
-                        <td class="precio">${{ number_format($detalle['total'], 2) }}</td>
-                    </tr>
-                    <tr>
-                        <td class="producto" colspan="3">-----------------------------------------------------------------------</td>
-                    </tr>
-                @endforeach
-            </tbody>
-
-            <tr>
-                <td class="cantidad"></td>
-                <td class="producto">
-                    <strong>TOTAL</strong>
-                </td>
-                <td class="precio">
-                    $<?php echo number_format($ventaArray['total'], 2); ?>
-                </td>
-            </tr>
-
-        </table>
-        <p class="centrado"><strong>
-                @if (intval($opc->{'Leyenda inferior'}) == 1)
-                    {{ $text1 }}
-                @endif
-            </strong>
-        </p>
-        --}}
+    --}}
     </div>
 </body>
 

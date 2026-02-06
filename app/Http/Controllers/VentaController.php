@@ -518,7 +518,9 @@ class VentaController extends Controller
             default => [0,0,0,0],
         };
 
-        $pdf = PDF::loadView('comprobantes.ticket_venta_mixto', compact('pedidos','ventas','userPrinterSize'))
+        $config = Configuration::first();
+
+        $pdf = PDF::loadView('comprobantes.ticket_venta_mixto', compact('pedidos','ventas','userPrinterSize','config'))
             ->setPaper($size,'portrait');
         return $pdf->stream();
     }
@@ -541,9 +543,11 @@ class VentaController extends Controller
             80 => [0,0,212,1440],
             default => [0,0,0,0],
         };
+
+        $config = Configuration::first();
         //dd($venta,$userPrinterSize);
 
-        $pdf = PDF::loadView('comprobantes.ticket_venta', compact('venta','userPrinterSize'))
+        $pdf = PDF::loadView('comprobantes.ticket_venta', compact('venta','userPrinterSize','config'))
             ->setPaper($size,'portrait');
         return $pdf->stream();
     }

@@ -100,9 +100,14 @@ if ($userPrinterSize == '58') {
 
 
     <div class="ticket centrado">
+        <img src="{{ public_path('storage/'.$config->imagen) }}" width="120" height="auto" />
         <h1>Puerto Escondido No. 407</h1>
         <h2>Col. Eliseo Jiménez Ruiz. Oaxaca, Oax.</h2>
         <h2>951 244 21 08 varinipaz@hotmail.com</h2>
+        <h2>Lunes a Viernes</h2>
+        <h2>10:00 a 14:00 y de 16:00 a 19:00 Hrs</h2>
+        <h2>Sábado</h2>
+        <h2>10:00 a 15:00 Hrs</h2>
 
 
         {{-- VENTAS DETALLADAS --}}

@@ -104,7 +104,7 @@ if ($userPrinterSize == '58') {
     @endphp
 
     <div class="ticket centrado">
-        {{-- <img src="{{ $base64 }}" width="145" height="auto" /> --}}
+        <img src="{{ public_path('storage/'.$config->imagen) }}" width="120" height="auto" />
         <h1>Puerto Escondido No. 407</h1>
         <h2>Col. Eliseo Jiménez Ruiz. Oaxaca, Oax.</h2>
         <h2>951 244 21 08  varinipaz@hotmail.com</h2>
