@@ -104,7 +104,7 @@ if ($userPrinterSize == '58') {
     @endphp
 
     <div class="ticket centrado">
-        <img src="{{ public_path('storage/'.$config->imagen) }}" width="120" height="auto" />
+        <img src="{{ $imgPath }}" width="120" height="auto" />
         <h1>Puerto Escondido No. 407</h1>
         <h2>Col. Eliseo Jiménez Ruiz. Oaxaca, Oax.</h2>
         <h2>951 244 21 08  varinipaz@hotmail.com</h2>
@@ -114,18 +114,19 @@ if ($userPrinterSize == '58') {
         <h2>10:00 a 15:00 Hrs</h2>
 
         {{-- Datos generales --}}
-        <p><strong>Cliente:</strong>
+        <p><strong>Cliente:
             {{ $servicio && $servicio->cliente_id == 17
                 ? ($servicio->cliente_alias ?? 'CLIENTE PÚBLICO')
                 : ($venta->cliente?->full_name ?? 'CLIENTE PÚBLICO')
             }}
+            </strong>
         </p>
 
-        <p><strong>Folio:</strong> {{ $venta->folio }}</p>
-        <p><strong>Fecha:</strong> {{ \Carbon\Carbon::parse($venta->fecha)->format('d/m/Y H:i') }}</p>
+        <p><strong>Folio: {{ $venta->folio }}</strong></p>
+        <p><strong>Fecha: {{ \Carbon\Carbon::parse($venta->fecha)->format('d/m/Y H:i') }}</strong></p>
 
 
-        <table>
+        <table style="font-weight: bold;">
             <thead>
                 <tr>
                     <td class="producto" colspan="3">

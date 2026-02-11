@@ -520,7 +520,11 @@ class VentaController extends Controller
 
         $config = Configuration::first();
 
-        $pdf = PDF::loadView('comprobantes.ticket_venta_mixto', compact('pedidos','ventas','userPrinterSize','config'))
+        $imgPath = $config->imagen
+        ? $_SERVER['DOCUMENT_ROOT'].'/storage/'.$config->imagen
+        : $_SERVER['DOCUMENT_ROOT'].'/images/default.png';
+
+        $pdf = PDF::loadView('comprobantes.ticket_venta_mixto', compact('pedidos','ventas','userPrinterSize','config','imgPath'))
             ->setPaper($size,'portrait');
         return $pdf->stream();
     }
@@ -545,9 +549,13 @@ class VentaController extends Controller
         };
 
         $config = Configuration::first();
+
+        $imgPath = $config->imagen
+        ? $_SERVER['DOCUMENT_ROOT'].'/storage/'.$config->imagen
+        : $_SERVER['DOCUMENT_ROOT'].'/images/default.png';
         //dd($venta,$userPrinterSize);
 
-        $pdf = PDF::loadView('comprobantes.ticket_venta', compact('venta','userPrinterSize','config'))
+        $pdf = PDF::loadView('comprobantes.ticket_venta', compact('venta','userPrinterSize','config', 'imgPath'))
             ->setPaper($size,'portrait');
         return $pdf->stream();
     }

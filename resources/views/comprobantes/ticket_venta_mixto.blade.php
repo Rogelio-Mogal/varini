@@ -100,7 +100,7 @@ if ($userPrinterSize == '58') {
 
 
     <div class="ticket centrado">
-        <img src="{{ public_path('storage/'.$config->imagen) }}" width="120" height="auto" />
+        <img src="{{ $imgPath }}" width="120" height="auto" />
         <h1>Puerto Escondido No. 407</h1>
         <h2>Col. Eliseo Jiménez Ruiz. Oaxaca, Oax.</h2>
         <h2>951 244 21 08 varinipaz@hotmail.com</h2>
@@ -115,9 +115,9 @@ if ($userPrinterSize == '58') {
             <h2>--- VENTAS ---</h2>
             @foreach ($ventas as $venta)
                 <br />
-                <p><strong>Folio:</strong> {{ $venta->folio }}</p>
-                <p><strong>Cliente:</strong> {{ $venta->cliente->full_name ?? 'CLIENTE PÚBLICO' }}</p>
-                <p><strong>Fecha:</strong> {{ \Carbon\Carbon::parse($venta->fecha)->format('d/m/Y H:i') }}</p>
+                <p><strong>Folio: {{ $venta->folio }} </strong></p>
+                <p><strong>Cliente: {{ $venta->cliente->full_name ?? 'CLIENTE PÚBLICO' }} </strong></p>
+                <p><strong>Fecha: {{ \Carbon\Carbon::parse($venta->fecha)->format('d/m/Y H:i') }} </strong></p>
 
                 <table>
                     <thead>
@@ -211,12 +211,12 @@ if ($userPrinterSize == '58') {
                 @endphp
 
                 <br />
-                <p><strong>Referencia:</strong> {{ $ref }}</p>
-                <p><strong>Cliente:</strong> {{ $items->first()->cliente->full_name ?? 'CLIENTE PÚBLICO' }}</p>
-                <p><strong>Fecha entrega:</strong>
-                    {{ \Carbon\Carbon::parse($items->first()->fecha_estimada_entrega)->format('d/m/Y') }}</p>
+                <p><strong>Referencia: {{ $ref }}</strong></p>
+                <p><strong>Cliente: {{ $items->first()->cliente->full_name ?? 'CLIENTE PÚBLICO' }}</strong></p>
+                <p><strong>Fecha entrega:
+                    {{ \Carbon\Carbon::parse($items->first()->fecha_estimada_entrega)->format('d/m/Y') }}</strong></p>
 
-                <table>
+                <table style="font-weight: bold;">
                     <thead>
                         <tr>
                             <td colspan="3">-----------------------------------------------------------------------
@@ -232,7 +232,7 @@ if ($userPrinterSize == '58') {
                             </td>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody style="font-weight: bold;">
                         @foreach ($items as $detalle)
                             <tr>
                                 <td colspan="3" class="producto uppercase">
@@ -248,17 +248,17 @@ if ($userPrinterSize == '58') {
                         <tr>
                             <td></td>
                             <td><strong>TOTAL PEDIDO: </strong></td>
-                            <td>${{ number_format($totalPedido, 2) }}</td>
+                            <td> ${{ number_format($totalPedido, 2) }}</td>
                         </tr>
                         <tr>
                             <td></td>
                             <td><strong>TOTAL ABONADO: </strong></td>
-                            <td>${{ number_format($totalAbonos, 2) }}</td>
+                            <td> ${{ number_format($totalAbonos, 2) }}</td>
                         </tr>
                         <tr>
                             <td></td>
                             <td><strong>RESTANTE: </strong></td>
-                            <td>${{ number_format($restante, 2) }}</td>
+                            <td> ${{ number_format($restante, 2) }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -267,18 +267,18 @@ if ($userPrinterSize == '58') {
             {{-- Mostrar sumatoria total --}}
             <br><br>
             <h3>--- RESUMEN GENERAL ---</h3>
-            <table>
+            <table style="font-weight: bold;">
                 <tr>
                     <td><strong>TOTAL PEDIDOS: </strong></td>
-                    <td>${{ number_format($granTotalPedido, 2) }}</td>
+                    <td> ${{ number_format($granTotalPedido, 2) }}</td>
                 </tr>
                 <tr>
                     <td><strong>TOTAL ABONADO: </strong></td>
-                    <td>${{ number_format($granTotalAbonos, 2) }}</td>
+                    <td> ${{ number_format($granTotalAbonos, 2) }}</td>
                 </tr>
                 <tr>
                     <td><strong>RESTANTE: </strong></td>
-                    <td>${{ number_format($granTotalRestante, 2) }}</td>
+                    <td> ${{ number_format($granTotalRestante, 2) }}</td>
                 </tr>
             </table>
         @endif

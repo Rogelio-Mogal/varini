@@ -820,13 +820,18 @@ class PonchadosPedidosController extends Controller
 
         $config = Configuration::first();
 
+        $imgPath = $config->imagen
+        ? $_SERVER['DOCUMENT_ROOT'].'/storage/'.$config->imagen
+        : $_SERVER['DOCUMENT_ROOT'].'/images/default.png';
+
         $pdf = PDF::loadView('comprobantes.ticket_ponchado', compact(
             'pedidos',
             'userPrinterSize',
             'totalVenta',
             'totalPagado',
             'totalFaltante',
-            'config'
+            'config',
+            'imgPath'
         ))
             ->setPaper($size, 'portrait');
 

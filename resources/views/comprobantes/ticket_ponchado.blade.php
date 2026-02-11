@@ -101,7 +101,7 @@ if ($userPrinterSize == '58') {
 
 
     <div class="ticket centrado">
-        <img src="{{ public_path('storage/'.$config->imagen) }}" width="120" height="auto" />
+        <img src="{{ $imgPath }}" width="120" height="auto" />
         <h1>Puerto Escondido No. 407</h1>
         <h2>Col. Eliseo Jiménez Ruiz. Oaxaca, Oax.</h2>
         <h2>951 244 21 08  varinipaz@hotmail.com</h2>
@@ -121,11 +121,11 @@ if ($userPrinterSize == '58') {
                 </strong>
             </p>
 
-            <p><strong>Fecha estimada de entrega:</strong> {{ \Carbon\Carbon::parse($pedido->fecha_estimada_entrega)->format('d/m/Y') }}</p>
+            <p><strong>Fecha estimada de entrega:{{ \Carbon\Carbon::parse($pedido->fecha_estimada_entrega)->format('d/m/Y') }} </strong> </p>
             @break
         @endforeach
 
-        <table width="97%" cellspacing="0" cellpadding="0" align="center" style="margin-left:10px;margin-right:10px;">
+        <table width="97%" cellspacing="0" cellpadding="0" align="center" style="margin-left:10px;margin-right:10px;font-weight: bold;">
 
             <colgroup>
                 <col width="20%">
