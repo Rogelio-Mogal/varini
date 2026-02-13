@@ -544,6 +544,7 @@
             retrieve: true,
             processing: true,
             columnDefs: [
+                /*
                 {
                     targets: 0,
                     className: 'dt-control',
@@ -556,6 +557,22 @@
                     visible: true,
                     responsivePriority: -1 // 👈 hace que nunca se oculte
                 }
+                 */
+                {
+                    targets: 0,                 // dt-control
+                    className: 'dt-control',
+                    orderable: false,
+                    responsivePriority: 2,     // segunda prioridad
+                    visible: true
+                },
+                {
+                    targets: -1,               // última columna (Opciones)
+                    responsivePriority: 1     // máxima prioridad → nunca se oculta
+                },
+                {
+                    targets: 3,               // Fecha
+                    type: 'date'
+                },
             ],
             ajax: {
                 url: "{{ route('ponchados.index.ajax') }}",
@@ -571,7 +588,7 @@
                     orderable: false,
                     data: null,
                     defaultContent: '', // DataTables insertará el ícono
-                    responsivePriority: 1,
+                    //responsivePriority: 1,
                 },
                 {
                     data: 'id',
@@ -682,12 +699,13 @@
                 }
             ],
             order: [[3, 'asc']], // la columna 10 es la de 'fecha' según tu código
-            columnDefs: [
+            /*columnDefs: [
                 {
                     targets: 3, // índice de la columna fecha
                     type: 'date'
                 }
             ],
+            */
             drawCallback: function(settings) {
                 // Inicializar popovers para los elementos
                 $('[data-popover-target]').each(function() {
