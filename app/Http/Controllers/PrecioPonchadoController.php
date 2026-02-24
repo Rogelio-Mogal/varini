@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\MessageBag;
+use Illuminate\Support\Facades\Storage;
 
 class PrecioPonchadoController extends Controller
 {
@@ -60,11 +61,60 @@ class PrecioPonchadoController extends Controller
 
     public function store(Request $request)
     {
+        $request->validate([
+            'detalles_json' => 'required|string',
+            'cliente_id' => 'required|exists:clientes,id'
+        ]);
+
+        $detalles = json_decode($request->detalles_json, true);
+
+        if (!is_array($detalles) || count($detalles) === 0) {
+            return back()->withErrors([
+                'detalles_json' => 'Debe agregar al menos un ponchado.'
+            ])->withInput();
+        }
+
+        foreach ($detalles as $index => $detalle) {
+
+            if (empty($detalle['ponchado_id'])) {
+                return back()->withErrors([
+                    "Error en fila ".($index+1).": Ponchado requerido."
+                ])->withInput();
+            }
+
+            if (!isset($detalle['precio']) || !is_numeric($detalle['precio']) || $detalle['precio'] < 0) {
+                return back()->withErrors([
+                    "Error en fila ".($index+1).": Precio inválido."
+                ])->withInput();
+            }
+
+            PrecioPonchado::create([
+                'ponchado_id' => $detalle['ponchado_id'],
+                'cliente_id' => $request->cliente_id,
+                'precio' => floatval($detalle['precio']),
+                'ponchado' => $detalle['ponchado'],
+            ]);
+        }
+
+        session()->flash('swal', [
+            'icon' => "success",
+            'title' => "Operación correcta",
+            'text' => "El precio se creó correctamente.",
+            'customClass' => [
+                'confirmButton' => 'text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800'  // Aquí puedes añadir las clases CSS que quieras
+            ],
+            'buttonsStyling' => false
+        ]);
+
+        return redirect()->route('admin.precio.ponchado.index');
+    }
+
+    public function storeDos(Request $request)
+    {
         $rules = [
             // Validación para arrays dinámicos (fondos clonables)
             'detalles' => 'required|array|min:1',
             'detalles.*.ponchado_id' => 'required|exists:ponchados,id',
-            //'detalles.*.precio.*' => 'required|numeric|min:0',
             'detalles.*.precio' => 'required|numeric|min:0',
         ];
 
@@ -314,11 +364,24 @@ class PrecioPonchadoController extends Controller
 
             // Modificar cada producto para agregar la URL completa de la imagen
             $ponchados = $ponchados->map(function ($producto) {
+                /*
+                $img = asset('images/default.png');
+
+                if ($producto->ponchadoRelacionado && $producto->ponchadoRelacionado->imagen_1) {
+                    $rutaImagen = ltrim($producto->ponchadoRelacionado->imagen_1, '/');
+
+                    if (Storage::disk('public')->exists($rutaImagen)) {
+                        $img = asset('storage/' . $rutaImagen);
+                    }
+                }
+                */
+
                 return [
                     'id' => $producto->id,
                     'img_thumb' => $producto->ponchadoRelacionado->imagen_1
                         ? asset('storage/' . ltrim($producto->ponchadoRelacionado->imagen_1, '/'))
                         : asset('images/default.png'),
+                    //'img_thumb' => $img,
                     'nombre' => $producto->ponchadoRelacionado->nombre,
                     'ponchado_id' => $producto->ponchadoRelacionado->id,
                     'cliente' => $producto->cliente->full_name,

@@ -258,7 +258,7 @@
                 data: ajaxData,
                 success: function(response) {
                     if (response.data) {
-                       
+
                         // Genearar el modal de edición
                         let modal = $('#edit-modal-status'); // + id);
 
@@ -274,7 +274,7 @@
                         modal.find('form').attr('action', updateUrl);
                         modal.find('#cliente_id').val(response.data.cliente_id);
                         modal.find('#pedido_ponchado_id').val(response.data.id);
-                        
+
                         modal.find('#nombre_pedido').text(response.data.referencia_cliente);
                         modal.find('#ponchado').text(response.data.ponchado.nombre);
                         modal.find('#piezas').text(response.data.cantidad_piezas);
@@ -307,6 +307,11 @@
     });
 
     function ponchados() {
+        if ($.fn.DataTable.isDataTable('#ponchados_precios')) {
+            $('#ponchados_precios').DataTable().destroy();
+            $('#ponchados_precios').empty(); // 🔥 importante
+        }
+
         const postData = {
             _token: $('input[name=_token]').val(),
             origen: 'ponchados.precios',
@@ -320,7 +325,7 @@
                 "url": "{{ asset('/json/i18n/es_es.json') }}"
             },
             responsive: true,
-            retrieve: true,
+            //retrieve: true,
             processing: true,
             ajax: {
                 url: "{{ route('ponchados.precios.ajax') }}",
@@ -367,7 +372,7 @@
                     },
                     defaultContent: '$0.00'
                 },
-                
+
 
                 {
                     data: 'id',

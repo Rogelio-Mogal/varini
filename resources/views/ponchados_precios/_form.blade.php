@@ -4,6 +4,7 @@
     <div class="col-span-12 lg:col-span-12 space-y-2">
         <h3 class="font-bold text-purple-600 border-b pb-1 mb-3">Precios</h3>
         <div class="grid lg:grid-cols-12 md:grid-cols-12 sm:grid-cols-12 gap-2">
+            <input type="hidden" name="detalles_json" id="detalles_json">
 
             <div class="sm:col-span-12 lg:col-span-2 md:col-span-2">
                 <label for="btn-cliente" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -61,17 +62,17 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            
+
                                             @if($ponchado && !empty($ponchado->nombre))
                                                 <tr data-idponchadoServicio="{{ $ponchado->id }}">
                                                     <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                                         {{ $ponchado->nombre }}
-                                                        <input type="hidden" name="detalles[0][ponchado_id]" value="{{ $ponchado->id }}" />
-                                                        <input type="hidden" name="detalles[0][ponchado]" value="{{ $ponchado->nombre }}" />
+                                                        <input type="hidden"  class="ponchado_id" value="{{ $ponchado->id }}" />
+                                                        <input type="hidden" class="ponchado_nombre" value="{{ $ponchado->nombre }}" />
                                                     </td>
                                                     <td class="px-6 py-4">
-                                                        <input type="number" name="detalles[0][precio]" min="0" step="0.01"
-                                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
+                                                        <input type="number" min="0" step="0.01"
+                                                            class="precio_input bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg
                                                             focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                                                             placeholder="Precio" value="" />
                                                     </td>
@@ -186,7 +187,7 @@
                                 <button type="button" name="remove" class="remove remove-tr focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm p-2.5 me-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">
                                     <svg class="w-6 h-6 text-white dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 9-6 6m0-6 6 6m6-3a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
-                                    </svg> 
+                                    </svg>
                                     <span class="sr-only">Quitar</span>
                                 </button>
                             </td>
@@ -203,6 +204,33 @@
         });
 
         $(document).ready(function() {
+            $('form').on('submit', function(e) {
+
+                let detallesArray = [];
+
+                $('table[id^="item_table_"] tbody tr').each(function() {
+
+                    let ponchado_id = $(this).find('.ponchado_id').val();
+                    let precio = $(this).find('.precio_input').val();
+                    let ponchado = $(this).find('.ponchado_nombre').val();
+
+                    if (ponchado_id && precio && ponchado ) {
+                        detallesArray.push({
+                            ponchado_id: ponchado_id,
+                            precio: precio,
+                            ponchado: ponchado
+                        });
+                    }
+                });
+
+                if (detallesArray.length === 0) {
+                    e.preventDefault();
+                    alert("Debe agregar al menos un ponchado con precio.");
+                    return;
+                }
+
+                $('#detalles_json').val(JSON.stringify(detallesArray));
+            });
 
             let tableS = null; //de ponchados
 
@@ -330,14 +358,14 @@
                     // Producto (nombre mostrado)
                     html += `<td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                         ${nombre}
-                        <input type="hidden" name="detalles[${index}][ponchado_id]" value="${idponchado}" />
-                        <input type="hidden" name="detalles[${index}][ponchado]" value="${nombre}" />
+                        <input type="hidden" class="ponchado_id" value="${idponchado}" />
+                        <input type="hidden" class="ponchado_nombre" value="${nombre}" />
                     </td>`;
 
                     // PRECIO
                     html += `<td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                       <input type="number" name="detalles[${index}][precio]" min="0" step="0.01"
-                        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                       <input type="number" min="0" step="0.01"
+                        class="precio_input bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         placeholder="Precio" value="" />
 
                     </td>`;
@@ -451,15 +479,25 @@
             });
 
             // Función para recargar o inicializar la tabla PONCHADOS
-            async function recargarOInicializarTabla() {
-                if ($.fn.DataTable.isDataTable('#ponchados')) {
+            //async function recargarOInicializarTabla() {
+            //    if ($.fn.DataTable.isDataTable('#ponchados')) {
                     // Recargar los datos sin redibujar la tabla
-                    await tableS.ajax.reload(null, false);
-                    tableS.ajax.reload(null, false);
-                } else {
+            //        await tableS.ajax.reload(null, false);
+            //        tableS.ajax.reload(null, false);
+            //    } else {
                     // Inicializar la tabla si aún no está inicializada
-                    await ponchados();
+            //        await ponchados();
+            //    }
+            //}
+
+            async function recargarOInicializarTabla() {
+
+                if (tableS) {
+                    tableS.ajax.reload(null, false);
+                    return;
                 }
+
+                await ponchados();
             }
 
             // OBTEMGO LOS PONCHADOS POR AJAX

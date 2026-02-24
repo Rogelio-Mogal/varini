@@ -526,6 +526,10 @@
     });
 
     function ponchados() {
+        if ($.fn.DataTable.isDataTable('#ponchados_pedidos')) {
+            $('#ponchados_pedidos').DataTable().destroy();
+            $('#ponchados_pedidos').empty(); // 🔥 importante
+        }
         const postData = {
             _token: $('input[name=_token]').val(),
             origen: 'ponchados.pedidos',

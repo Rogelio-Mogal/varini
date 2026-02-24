@@ -700,6 +700,13 @@ class PonchadosController extends Controller
 
             // Modificar cada producto para agregar la URL completa de la imagen
             $ponchados = $ponchados->map(function ($producto) {
+                /*$rutaImagen = ltrim($producto->imagen_1, '/');
+
+                if ($producto->imagen_1 && Storage::disk('public')->exists($rutaImagen)) {
+                    $img = asset('storage/' . $rutaImagen);
+                } else {
+                    $img = asset('images/default.png');
+                }*/
                 return [
                     'id' => $producto->id,
                     'nombre' => $producto->nombre,
@@ -709,6 +716,7 @@ class PonchadosController extends Controller
                     'largo' => $producto->largo,
                     'aro' => $producto->aro,
                     'img_thumb' => $producto->imagen_1 ? asset('storage/' . ltrim($producto->imagen_1, '/')) : asset('images/default.png'),
+                    //'img_thumb' => $img,
                     'archivo' => $producto->archivo,
                     'nota' => $producto->nota,
                     'es_borrador' => $producto->es_borrador,
@@ -820,9 +828,18 @@ class PonchadosController extends Controller
                     'estatus' => $estatusPedido, // ÚNICO ESTATUS DEL PEDIDO
                     'activo' => $items->first()->activo,
                     'detalles' => $items->map(function ($producto) {
+                        /*$img = asset('images/default.png');
+                        if ($producto->ponchado && $producto->ponchado->imagen_1) {
+                            $rutaImagen = ltrim($producto->ponchado->imagen_1, '/');
+
+                            if (Storage::disk('public')->exists($rutaImagen)) {
+                                $img = asset('storage/' . $rutaImagen);
+                            }
+                        }*/
                         return [
                             'id' => $producto->id,
                             'img_thumb' => $producto->ponchado->imagen_1 ? asset('storage/' . ltrim($producto->ponchado->imagen_1, '/')) : asset('images/default.png'),
+                            //'img_thumb' => $img,
                             'ponchado' => $producto->ponchado->nombre,
                             'prenda' => $producto->prenda,
                             'clasificacion' => $producto->clasificacionUbicacion->nombre ?? null,

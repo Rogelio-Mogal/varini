@@ -180,6 +180,11 @@
     });
 
     function ponchados() {
+        if ($.fn.DataTable.isDataTable('#ponchados')) {
+            $('#ponchados').DataTable().destroy();
+            $('#ponchados').empty(); // 🔥 importante
+        }
+
         const postData = {
             _token: $('input[name=_token]').val(),
             origen: 'ponchados.index',

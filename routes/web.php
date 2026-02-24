@@ -31,9 +31,31 @@ use App\Http\Controllers\TicketAlternoController;
 use App\Http\Controllers\TipoGastoController;
 use App\Http\Controllers\VentaController;
 use App\Http\Controllers\VentaPagadaController;
+use App\Models\Ponchados;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckUserActive;
 
+Route::get('/limpiar-imagenes-ponchados', function () {
+
+    $ponchados = Ponchados::all();
+    $contador = 0;
+
+    foreach ($ponchados as $p) {
+
+        if ($p->imagen_1) {
+
+            $ruta = public_path('storage/' . ltrim($p->imagen_1, '/'));
+
+            if (!file_exists($ruta)) {
+                $p->imagen_1 = null;
+                $p->save();
+                $contador++;
+            }
+        }
+    }
+
+    return "Registros corregidos: " . $contador;
+});
 
 Route::get('/', function () {
     return view('welcome');
