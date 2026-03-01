@@ -707,6 +707,19 @@ class PonchadosController extends Controller
                 } else {
                     $img = asset('images/default.png');
                 }*/
+                $imagen = $producto->imagen_1;
+
+                $contenidoImagen = 'SIN IMAGEN'; // texto por defecto
+
+                if (!empty($imagen)) {
+
+                    $rutaFisica = $_SERVER['DOCUMENT_ROOT'] . '/storage/' . $imagen;
+
+                    if (file_exists($rutaFisica)) {
+                        $contenidoImagen = asset('storage/' . ltrim($imagen, '/'));
+                    }
+                }
+
                 return [
                     'id' => $producto->id,
                     'nombre' => $producto->nombre,
@@ -715,7 +728,7 @@ class PonchadosController extends Controller
                     'ancho' => $producto->ancho,
                     'largo' => $producto->largo,
                     'aro' => $producto->aro,
-                    'img_thumb' => $producto->imagen_1 ? asset('storage/' . ltrim($producto->imagen_1, '/')) : asset('images/default.png'),
+                    'img_thumb' => $contenidoImagen,
                     //'img_thumb' => $img,
                     'archivo' => $producto->archivo,
                     'nota' => $producto->nota,

@@ -35,26 +35,56 @@ use App\Models\Ponchados;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\CheckUserActive;
 
-Route::get('/limpiar-imagenes-ponchados', function () {
+Route::get('/verificar-imagenes-ponchados', function () {
 
-    $ponchados = Ponchados::all();
-    $contador = 0;
+    $conImagen = [];
+    $noEncontradas = [];
+    $sinImagenBD = [];
+
+    $ponchados = Ponchados::cursor();
 
     foreach ($ponchados as $p) {
 
-        if ($p->imagen_1) {
+        // 1️⃣ No tiene imagen en BD
+        if (empty($p->imagen_1)) {
 
-            $ruta = public_path('storage/' . ltrim($p->imagen_1, '/'));
+            $sinImagenBD[] = [
+                'id' => $p->id
+            ];
 
-            if (!file_exists($ruta)) {
-                $p->imagen_1 = null;
-                $p->save();
-                $contador++;
-            }
+            continue;
+        }
+
+        // 2️⃣ Tiene imagen en BD → verificar archivo físico
+        $rutaFisica = $_SERVER['DOCUMENT_ROOT'] . '/storage/' . $p->imagen_1;
+
+        if (file_exists($rutaFisica)) {
+
+            $conImagen[] = [
+                'id' => $p->id,
+                'imagen_bd' => $p->imagen_1
+            ];
+
+        } else {
+
+            $noEncontradas[] = [
+                'id' => $p->id,
+                'imagen_bd' => $p->imagen_1,
+                'ruta_revisada' => $rutaFisica
+            ];
         }
     }
 
-    return "Registros corregidos: " . $contador;
+    return response()->json([
+        'total_con_imagen_existente' => count($conImagen),
+        'total_imagen_no_encontrada' => count($noEncontradas),
+        'total_sin_imagen_en_bd' => count($sinImagenBD),
+        'detalle' => [
+            'con_imagen_existente' => $conImagen,
+            'imagen_no_encontrada' => $noEncontradas,
+            'sin_imagen_bd' => $sinImagenBD
+        ]
+    ]);
 });
 
 Route::get('/', function () {

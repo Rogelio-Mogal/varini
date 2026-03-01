@@ -536,8 +536,14 @@
                         {
                             data: 'img_thumb',
                             render: function(data, type, row) {
-                                return '<img class="h-auto max-w-20 sm:max-w-20 md:max-w-40 lg:max-w-40 object-cover object-center" src="' +
-                                    data + '" alt="">';
+                                if (data.startsWith('http')) {
+                                    return `<img class="h-auto max-w-20 md:max-w-40 object-cover object-center"
+                                            src="${data}" alt="">`;
+                                }
+
+                                return `<span class="text-gray-400 text-sm font-semibold">
+                                            ${data}
+                                        </span>`;
                             }
                         },
                         {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Cliente;
 use App\Models\Ponchados;
 use App\Models\PrecioPonchado;
+use App\Models\ServiciosPonchadosVenta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -363,18 +364,17 @@ class PrecioPonchadoController extends Controller
                 ->get();
 
             // Modificar cada producto para agregar la URL completa de la imagen
-            $ponchados = $ponchados->map(function ($producto) {
-                /*
-                $img = asset('images/default.png');
+            /*$ponchados = $ponchados->map(function ($producto) {
+                //$img = asset('images/default.png');
 
-                if ($producto->ponchadoRelacionado && $producto->ponchadoRelacionado->imagen_1) {
-                    $rutaImagen = ltrim($producto->ponchadoRelacionado->imagen_1, '/');
+                //if ($producto->ponchadoRelacionado && $producto->ponchadoRelacionado->imagen_1) {
+                //    $rutaImagen = ltrim($producto->ponchadoRelacionado->imagen_1, '/');
 
-                    if (Storage::disk('public')->exists($rutaImagen)) {
-                        $img = asset('storage/' . $rutaImagen);
-                    }
-                }
-                */
+                //    if (Storage::disk('public')->exists($rutaImagen)) {
+                //        $img = asset('storage/' . $rutaImagen);
+                //    }
+                //}
+
 
                 return [
                     'id' => $producto->id,
@@ -385,6 +385,31 @@ class PrecioPonchadoController extends Controller
                     'nombre' => $producto->ponchadoRelacionado->nombre,
                     'ponchado_id' => $producto->ponchadoRelacionado->id,
                     'cliente' => $producto->cliente->full_name,
+                    'precio' => $producto->precio,
+                ];
+            });
+            */
+            $ponchados = $ponchados->map(function ($producto) {
+
+                $imagen = optional($producto->ponchadoRelacionado)->imagen_1;
+
+                $contenidoImagen = 'SIN IMAGEN'; // texto por defecto
+
+                if (!empty($imagen)) {
+
+                    $rutaFisica = $_SERVER['DOCUMENT_ROOT'] . '/storage/' . $imagen;
+
+                    if (file_exists($rutaFisica)) {
+                        $contenidoImagen = asset('storage/' . ltrim($imagen, '/'));
+                    }
+                }
+
+                return [
+                    'id' => $producto->id,
+                    'img_thumb' => $contenidoImagen,
+                    'nombre' => $producto->ponchadoRelacionado->nombre ?? 'Sin nombre',
+                    'ponchado_id' => $producto->ponchadoRelacionado->id ?? null,
+                    'cliente' => $producto->cliente->full_name ?? 'Sin cliente',
                     'precio' => $producto->precio,
                 ];
             });
