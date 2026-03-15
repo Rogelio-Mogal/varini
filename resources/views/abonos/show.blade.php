@@ -143,10 +143,10 @@
                         <div class="sm:col-span-12 lg:col-span-12 md:col-span-12">
                             @foreach ($creditos as $cliente)
                                 <h4>
-                                    {{ $cliente['full_name'] }} — Total crédito:
+                                    {{ $cliente['full_name'] }} — Crédito activo:
                                     ${{ number_format($cliente['total_credito'], 2) }} —
-                                    Abonos ${{ number_format($cliente['total_abonado'], 2) }} —
-                                    Deuda ${{ number_format($cliente['deuda_credito'], 2) }}
+                                    Abonos aplicados ${{ number_format ($cliente['total_credito'] - $cliente['deuda_credito'],2) }} —
+                                    Saldo ${{ number_format($cliente['deuda_credito'], 2) }}
                                 </h4>
 
                                 <table id="cotizacion_detalles" class="table table-striped" style="width:100%">
